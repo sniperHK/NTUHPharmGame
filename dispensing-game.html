@@ -116,6 +116,11 @@
             padding: 6px 10px;
         }
 
+        .prescription-compact.position-ok {
+            outline: 2px solid rgba(76, 175, 80, 0.9);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+        }
+
         /* 定位模式：置中顯示 */
         .location-mode-row {
             display: flex;
@@ -140,8 +145,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 8px;
+            flex-wrap: nowrap;
+            width: 100%;
+        }
+
+        .dispensing-mode-row .drug-name-compact {
+            flex: 1 1 auto;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .quantity-badge {
@@ -151,6 +165,8 @@
             border-radius: 12px;
             font-size: 0.85rem;
             font-weight: bold;
+            white-space: nowrap;
+            flex: 0 0 auto;
         }
 
         .spec-badge {
@@ -159,12 +175,15 @@
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.7rem;
+            white-space: nowrap;
+            flex: 0 0 auto;
         }
 
         .counter-group {
             display: flex;
             gap: 8px;
             align-items: center;
+            flex: 0 0 auto;
         }
 
         .counter-item {
@@ -1227,7 +1246,7 @@
                 if (gameState.mode === 'location') {
                     handleCorrect();
                 } else {
-                    showFeedback('✓ 位置正確！請輸入數量', 'correct');
+                    markPositionConfirmed();
                 }
             } else if (drug.cabinet === 'Desktop') {
                 element.style.outline = '3px solid #f44336';
@@ -1338,6 +1357,9 @@
             const randomIndex = Math.floor(Math.random() * drugDatabase.length);
             gameState.currentDrug = drugDatabase[randomIndex];
 
+            const prescriptionCard = document.querySelector('.prescription-compact');
+            if (prescriptionCard) prescriptionCard.classList.remove('position-ok');
+
             if (gameState.mode !== 'location') {
                 gameState.currentQuantity = generateQuantity(gameState.currentDrug);
             }
@@ -1413,13 +1435,18 @@
                 if (gameState.mode === 'location') {
                     handleCorrect();
                 } else {
-                    showFeedback('✓ 位置正確！請輸入數量', 'correct');
+                    markPositionConfirmed();
                 }
             } else {
                 element.classList.add('wrong');
                 handleWrong();
                 highlightCorrectSlot();
             }
+        }
+
+        function markPositionConfirmed() {
+            const prescriptionCard = document.querySelector('.prescription-compact');
+            if (prescriptionCard) prescriptionCard.classList.add('position-ok');
         }
 
         function highlightCorrectSlot() {
@@ -1450,9 +1477,9 @@
         function submitDispensing() {
             if (!gameState.isPlaying || !gameState.currentDrug) return;
 
-            const boxCount = parseInt(document.getElementById('boxCount').value) || 0;
-            const stripCount = parseInt(document.getElementById('stripCount').value) || 0;
-            const looseCount = parseInt(document.getElementById('looseCount').value) || 0;
+            const boxCount = parseInt(document.getElementById('boxCount').textContent) || 0;
+            const stripCount = parseInt(document.getElementById('stripCount').textContent) || 0;
+            const looseCount = parseInt(document.getElementById('looseCount').textContent) || 0;
 
             const drug = gameState.currentDrug;
             const totalDispensed = (boxCount * drug.boxSize) + (stripCount * drug.stripSize) + looseCount;
