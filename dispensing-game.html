@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台大藥劑部 - 調劑訓練遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* 藥櫃主區域 */
+        .cabinet-area {
+            background: #eceff1;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        /* ========== 中間遊戲區整合樣式 ========== */
+        .center-game-zone {
+            flex: 2;
+            background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+            border: 3px solid #fbc02d;
+            border-radius: 10px;
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 300px;
+        }
+
+        .compact-header {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #5d4037;
+        }
+
+        .version-tag {
+            font-size: 0.7rem;
+            background: #8d6e63;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+
+        .compact-stats {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .mini-stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .stat-label { font-size: 0.85rem; }
+        .stat-val { font-weight: bold; font-size: 1rem; }
+        .stat-val.time { color: #e74c3c; }
+        .stat-val.score { color: #27ae60; }
+        .stat-val.combo { color: #f39c12; }
+
+        .mode-selector-compact {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn-sm {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .mode-btn-sm.location { background: #3498db; color: white; }
+        .mode-btn-sm.dispensing { background: #27ae60; color: white; }
+        .mode-btn-sm.rush { background: #e74c3c; color: white; }
+
+        .mode-btn-sm:hover { transform: scale(1.05); }
+        .mode-btn-sm.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .prescription-compact {
+            background: white;
+            border-radius: 8px;
+            padding: 6px 10px;
+        }
+
+        /* 定位模式：置中顯示 */
+        .location-mode-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .drug-name-compact {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .drug-hint-compact {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        /* 配藥模式：水平排列 */
+        .dispensing-mode-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quantity-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .spec-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+
+        .counter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .counter-item {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .counter-minus {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+            color: #666;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .counter-minus:hover { background: #e0e0e0; }
+        .counter-minus:active { background: #d0d0d0; }
+
+        .counter-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .counter-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
+
+        .counter-circle:active {
+            transform: scale(0.95);
+        }
+
+        .counter-label {
+            font-size: 0.7rem;
+            color: #555;
+            min-width: 14px;
+        }
+
+        .submit-btn-sm {
+            padding: 6px 12px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-btn-sm:hover { background: #219a52; transform: scale(1.05); }
+
+        .section-label {
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* ========== 上排：C - B - A 開放式架子 ========== */
+        .top-shelf-row {
+            display: flex;
+            gap: 8px;
+            justify-content: stretch;
+            align-items: stretch;
+            margin-bottom: 15px;
+            padding: 0;
+            width: 100%;
+        }
+
+        .shelf-cabinet {
+            background: linear-gradient(180deg, #a1887f 0%, #8d6e63 100%);
+            border-radius: 8px;
+            padding: 8px;
+            flex: 1;
+            min-width: 0;
+            border: 3px solid #5d4037;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .shelf-cabinet .shelf-grid {
+            flex: 1;
+            align-content: stretch;
+        }
+
+        .shelf-cabinet .cab-label {
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            background: #4e342e;
+            border-radius: 4px;
+            padding: 4px;
+            letter-spacing: 2px;
+        }
+
+        .shelf-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 3px;
+        }
+
+        /* ========== 下排：J - I - H - G - E - F 抽屜櫃 ========== */
+        .bottom-cabinet-row {
+            display: flex;
+            gap: 8px;
+            justify-content: stretch;
+            padding: 0;
+            width: 100%;
+        }
+
+        .drawer-cabinet {
+            background: linear-gradient(180deg, #8d6e63 0%, #6d4c41 100%);
+            border-radius: 8px;
+            padding: 8px;
+            flex: 1;
+            min-width: 0;
+            border: 3px solid #4e342e;
+        }
+
+        .drawer-cabinet .cab-label {
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 6px;
+            background: #3e2723;
+            border-radius: 4px;
+            padding: 4px;
+            letter-spacing: 2px;
+        }
+
+        /* 抽屜區 (上半部) */
+        .drawer-section {
+            margin-bottom: 6px;
+        }
+
+        .drawer-label {
+            font-size: 0.65rem;
+            color: #d7ccc8;
+            text-align: center;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+
+        .drawer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            background: #5d4037;
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        /* 雙開門區 (下半部) */
+        .door-section {
+            display: flex;
+            gap: 6px;
+        }
+
+        .door {
+            flex: 1;
+            background: #4e342e;
+            border-radius: 5px;
+            padding: 5px;
+            border: 2px solid #3e2723;
+            min-width: 0;
+        }
+
+        .door-label {
+            font-size: 0.6rem;
+            color: #bcaaa4;
+            text-align: center;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+
+        .door-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+        }
+
+        /* 藥品格子 */
+        .drug-slot {
+            background: #efebe9;
+            border-radius: 3px;
+            min-height: 32px;
+            cursor: grab;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+            padding: 2px;
+            text-align: center;
+            color: #333;
+            border: 2px solid transparent;
+            line-height: 1.15;
+            position: relative;
+            user-select: none;
+        }
+
+        .drug-slot.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .drug-slot:hover {
+            background: #bbdefb;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .drug-slot.correct {
+            background: #a5d6a7;
+            border-color: #4caf50;
+            animation: pulse 0.5s;
+        }
+
+        .drug-slot.wrong {
+            background: #ef9a9a;
+            border-color: #f44336;
+            animation: shake 0.5s;
+        }
+
+        .drug-slot.highlight {
+            background: #fff59d;
+            border-color: #ffc107;
+            animation: glow 1s infinite;
+        }
+
+        .drug-slot.box::after {
+            content: '盒';
+            font-size: 0.45rem;
+            color: #e65100;
+            position: absolute;
+            bottom: 0;
+            right: 1px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px #ffc107; }
+            50% { box-shadow: 0 0 15px #ffc107; }
+        }
+
+        /* 桌面區 - 工作區域 */
+        .desktop-area-container {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+            padding: 10px;
+            background: linear-gradient(180deg, #bcaaa4 0%, #a1887f 100%);
+            border-radius: 10px;
+            border: 2px solid #8d6e63;
+            min-height: 120px;
+            align-items: stretch;
+        }
+
+        .drop-zone {
+            flex: 1;
+            min-height: 100px;
+            background: #efebe9;
+            border-radius: 8px;
+            border: 3px dashed #8d6e63;
+            padding: 8px;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drop-zone.drag-over {
+            background: #c8e6c9;
+            border-color: #4caf50;
+            border-style: solid;
+        }
+
+        .drop-zone-label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #5d4037;
+            margin-bottom: 6px;
+            text-align: center;
+            padding: 3px 6px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 4px;
+        }
+
+        .drop-zone-content {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-content: flex-start;
+            min-height: 40px;
+        }
+
+        .left-hand-zone { border-color: #1976d2; }
+        .left-hand-zone .drop-zone-label { color: #1565c0; }
+        .left-hand-zone.drag-over { background: #bbdefb; border-color: #1976d2; }
+
+        .right-hand-zone { border-color: #c62828; }
+        .right-hand-zone .drop-zone-label { color: #c62828; }
+        .right-hand-zone.drag-over { background: #ffcdd2; border-color: #c62828; }
+
+        .draggable-drug {
+            background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+            border: 2px solid #fbc02d;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .draggable-drug:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .draggable-drug.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .draggable-drug.in-left {
+            background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
+            border-color: #1976d2;
+        }
+
+        .draggable-drug.in-right {
+            background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%);
+            border-color: #c62828;
+        }
+
+        /* 回饋訊息 */
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 25px 45px;
+            border-radius: 12px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+            animation: fadeInOut 1.2s;
+        }
+
+        .feedback.correct { background: #4caf50; color: white; }
+        .feedback.wrong { background: #f44336; color: white; }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* 開始畫面 */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .start-screen h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .start-screen p {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+
+        .start-btn {
+            padding: 18px 50px;
+            font-size: 1.3rem;
+            background: #fff;
+            color: #667eea;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .start-screen.hidden { display: none; }
+
+        /* 結果畫面 */
+        .result-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .result-screen.active { display: flex; }
+
+        .result-card {
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 420px;
+        }
+
+        .result-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .result-stats p {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .result-stats .highlight {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .retry-btn {
+            padding: 12px 35px;
+            font-size: 1.1rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* RWD */
+        @media (max-width: 1400px) {
+            .drawer-cabinet { padding: 6px; }
+            .door-grid { gap: 2px; }
+            .center-game-zone { min-width: 250px; }
+        }
+
+        @media (max-width: 1200px) {
+            .top-shelf-row { flex-wrap: wrap; }
+            .bottom-cabinet-row { flex-wrap: wrap; }
+            .shelf-cabinet { flex: 1 1 30%; min-width: 280px; }
+            .drawer-cabinet { flex: 1 1 30%; min-width: 150px; }
+            .desktop-area-container { flex-direction: column; }
+            .center-game-zone { flex: 1; min-width: 100%; order: -1; }
+            .drop-zone { min-height: 60px; }
+        }
+
+        @media (max-width: 900px) {
+            .drawer-cabinet { flex: 1 1 45%; }
+            .shelf-cabinet { flex: 1 1 45%; }
+        }
+
+        @media (max-width: 768px) {
+            .compact-header { font-size: 0.85rem; }
+            .drug-slot { font-size: 0.5rem; min-height: 28px; }
+            .shelf-grid { grid-template-columns: repeat(3, 1fr); }
+            .drawer-cabinet { flex: 1 1 100%; }
+            .shelf-cabinet { flex: 1 1 100%; }
+            .desktop-area-container { padding: 8px; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 開始畫面 -->
+    <div class="start-screen" id="startScreen">
+        <h1>💊 調劑訓練遊戲</h1>
+        <p>台大醫院藥劑部 門診配藥練習</p>
+        <button class="start-btn" onclick="startGame()">開始訓練</button>
+    </div>
+
+    <!-- 結果畫面 -->
+    <div class="result-screen" id="resultScreen">
+        <div class="result-card">
+            <h2>🎉 訓練完成！</h2>
+            <div class="result-stats">
+                <p>總分：<span class="highlight" id="finalScore">0</span> 分</p>
+                <p>正確率：<span class="highlight" id="finalAccuracy">0</span>%</p>
+                <p>最高連擊：<span class="highlight" id="finalCombo">0</span></p>
+                <p id="errorDrugs"></p>
+            </div>
+            <button class="retry-btn" onclick="restartGame()">再玩一次</button>
+        </div>
+    </div>
+
+    <!-- 主遊戲區 -->
+    <div class="container">
+        <div class="cabinet-area">
+            <!-- 上排：C - B - A 開放式架子 -->
+            <div class="section-label">▲ 上排架子（由左至右：C → B → A）</div>
+            <div class="top-shelf-row">
+                <div class="shelf-cabinet" id="cabinetC"></div>
+                <div class="shelf-cabinet" id="cabinetB"></div>
+                <div class="shelf-cabinet" id="cabinetA"></div>
+            </div>
+
+            <!-- 桌面工作區 - 整合狀態與題目 -->
+            <div class="desktop-area-container">
+                <div class="drop-zone left-hand-zone" id="leftHandZone">
+                    <div class="drop-zone-label">🖐️ 左手區</div>
+                    <div class="drop-zone-content" id="leftHandContent"></div>
+                </div>
+
+                <!-- 中間：遊戲狀態與題目區 -->
+                <div class="center-game-zone">
+                    <div class="compact-header">
+                        💊 台大藥劑部 調劑訓練 <span class="version-tag">2025/12/17</span>
+                    </div>
+                    <div class="compact-stats">
+                        <div class="mini-stat"><span class="stat-label">⏱</span><span class="stat-val time" id="timer">60</span></div>
+                        <div class="mini-stat"><span class="stat-label">🎯</span><span class="stat-val score" id="score">0</span></div>
+                        <div class="mini-stat"><span class="stat-label">🔥</span><span class="stat-val combo" id="combo">0</span></div>
+                        <div class="mini-stat"><span class="stat-label">📝</span><span class="stat-val" id="questionCount">0/10</span></div>
+                    </div>
+                    <div class="mode-selector-compact">
+                        <button class="mode-btn-sm location active" onclick="setMode('location')">🗺️ 定位</button>
+                        <button class="mode-btn-sm dispensing" onclick="setMode('dispensing')">💊 配藥</button>
+                        <button class="mode-btn-sm rush" onclick="setMode('rush')">⚡ 測試</button>
+                    </div>
+                    <div class="prescription-compact">
+                        <!-- 定位模式：單行顯示 -->
+                        <div class="location-mode-row" id="locationModeRow">
+                            <div class="drug-name-compact" id="drugNameLocation">等待開始...</div>
+                            <span class="drug-hint-compact" id="drugHintLocation"></span>
+                        </div>
+                        <!-- 配藥模式：水平排列所有元素 -->
+                        <div class="dispensing-mode-row" id="dispensingModeRow" style="display: none;">
+                            <div class="drug-name-compact" id="drugNameDispensing">等待開始...</div>
+                            <span class="quantity-badge" id="drugQuantityBadge">×0</span>
+                            <span class="spec-badge" id="specBadge">10/盒</span>
+                            <div class="counter-group">
+                                <div class="counter-item">
+                                    <button class="counter-minus" onclick="adjustCount('box', -1)">−</button>
+                                    <div class="counter-circle" onclick="adjustCount('box', 1)" id="boxCount">0</div>
+                                    <span class="counter-label">盒</span>
+                                </div>
+                                <div class="counter-item">
+                                    <button class="counter-minus" onclick="adjustCount('strip', -1)">−</button>
+                                    <div class="counter-circle" onclick="adjustCount('strip', 1)" id="stripCount">0</div>
+                                    <span class="counter-label">排</span>
+                                </div>
+                                <div class="counter-item">
+                                    <button class="counter-minus" onclick="adjustCount('loose', -1)">−</button>
+                                    <div class="counter-circle" onclick="adjustCount('loose', 1)" id="looseCount">0</div>
+                                    <span class="counter-label">顆</span>
+                                </div>
+                            </div>
+                            <button class="submit-btn-sm" onclick="submitDispensing()">✓</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="drop-zone right-hand-zone" id="rightHandZone">
+                    <div class="drop-zone-label">✋ 右手區</div>
+                    <div class="drop-zone-content" id="rightHandContent"></div>
+                </div>
+            </div>
+
+            <!-- 下排：J - I - H - G - F - E 抽屜櫃 -->
+            <div class="section-label">▼ 下排櫃子（由左至右：J → I → H → G → F → E）</div>
+            <div class="bottom-cabinet-row">
+                <div class="drawer-cabinet" id="cabinetJ"></div>
+                <div class="drawer-cabinet" id="cabinetI"></div>
+                <div class="drawer-cabinet" id="cabinetH"></div>
+                <div class="drawer-cabinet" id="cabinetG"></div>
+                <div class="drawer-cabinet" id="cabinetF"></div>
+                <div class="drawer-cabinet" id="cabinetE"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <script>
+        // ==================== 藥品資料庫 (根據實際位置圖 20251217) ====================
+        const drugDatabase = [
+            // ========== C 櫃 (上排左側架子，5層×6格) ==========
+            { name: "Lixiana 30mg", cabinet: "C", row: 1, col: 1, isBox: true, stripSize: 10, boxSize: 28 },
+            { name: "Pradaxa 110mg", cabinet: "C", row: 1, col: 2, stripSize: 10, boxSize: 60 },
+            { name: "Zanidip", cabinet: "C", row: 1, col: 3, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Plavix", cabinet: "C", row: 1, col: 4, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "DOXABEN XL 4MG", cabinet: "C", row: 1, col: 5, isBox: true, stripSize: 10, boxSize: 30 },
+            { name: "Edarbi", cabinet: "C", row: 1, col: 6, isBox: true, stripSize: 14, boxSize: 28 },
+
+            { name: "Ateol", cabinet: "C", row: 2, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Nifedipine 30mg", cabinet: "C", row: 2, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "COZAAR", cabinet: "C", row: 2, col: 3, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Bokey", cabinet: "C", row: 2, col: 4, stripSize: 10, boxSize: 100 },
+            { name: "Diovan", cabinet: "C", row: 2, col: 5, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Acetal", cabinet: "C", row: 2, col: 6, stripSize: 10, boxSize: 100 },
+
+            { name: "Arheuma", cabinet: "C", row: 3, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "EURICON 50mg", cabinet: "C", row: 3, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Forflow SR", cabinet: "C", row: 3, col: 3, stripSize: 10, boxSize: 30 },
+            { name: "Aldactone", cabinet: "C", row: 3, col: 4, stripSize: 10, boxSize: 100 },
+            { name: "DILATREND 6.25mg", cabinet: "C", row: 3, col: 5, stripSize: 10, boxSize: 30 },
+            { name: "MgO 56#", cabinet: "C", row: 3, col: 6, stripSize: 10, boxSize: 56 },
+
+            { name: "Dexilant", cabinet: "C", row: 4, col: 1, isBox: true, stripSize: 7, boxSize: 28 },
+            { name: "Urief", cabinet: "C", row: 4, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Dulcolax", cabinet: "C", row: 4, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Livalo", cabinet: "C", row: 4, col: 4, stripSize: 10, boxSize: 30 },
+            { name: "Diamicron", cabinet: "C", row: 4, col: 5, stripSize: 10, boxSize: 60 },
+            { name: "Fluitran", cabinet: "C", row: 4, col: 6, stripSize: 10, boxSize: 100 },
+
+            { name: "Norvasc", cabinet: "C", row: 5, col: 1, isBox: true, stripSize: 10, boxSize: 30 },
+            { name: "Certican", cabinet: "C", row: 5, col: 2, stripSize: 10, boxSize: 60 },
+            { name: "Lipitor", cabinet: "C", row: 5, col: 3, isBox: true, stripSize: 10, boxSize: 30 },
+            { name: "Amaryl", cabinet: "C", row: 5, col: 4, stripSize: 10, boxSize: 30 },
+            { name: "Betmiga", cabinet: "C", row: 5, col: 5, isBox: true, stripSize: 10, boxSize: 30 },
+
+            // ========== B 櫃 (上排中間架子，5層×6格) ==========
+            { name: "Celebrex", cabinet: "B", row: 1, col: 1, isBox: true, stripSize: 10, boxSize: 30 },
+            { name: "Nebilet", cabinet: "B", row: 1, col: 2, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Crestor", cabinet: "B", row: 1, col: 3, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Requip PD 2mg", cabinet: "B", row: 1, col: 4, isBox: true, stripSize: 7, boxSize: 21 },
+            { name: "Entresto 50mg", cabinet: "B", row: 1, col: 5, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Lasix", cabinet: "B", row: 1, col: 6, stripSize: 10, boxSize: 100 },
+
+            { name: "Exforge", cabinet: "B", row: 2, col: 1, stripSize: 14, boxSize: 28 },
+            { name: "Aprovel 300mg", cabinet: "B", row: 2, col: 2, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Arcoxia", cabinet: "B", row: 2, col: 3, isBox: true, stripSize: 7, boxSize: 28 },
+
+            { name: "Trajenta", cabinet: "B", row: 3, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Strocain", cabinet: "B", row: 3, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Musco", cabinet: "B", row: 3, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Kascoal", cabinet: "B", row: 3, col: 4, stripSize: 10, boxSize: 100 },
+            { name: "Weimok", cabinet: "B", row: 3, col: 5, stripSize: 10, boxSize: 100 },
+
+            { name: "Biofermin", cabinet: "B", row: 4, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Carpine", cabinet: "B", row: 4, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Januvia", cabinet: "B", row: 4, col: 3, isBox: true, stripSize: 7, boxSize: 28 },
+            { name: "Promeran", cabinet: "B", row: 4, col: 4, stripSize: 10, boxSize: 100 },
+            { name: "Synorid", cabinet: "B", row: 4, col: 5, stripSize: 10, boxSize: 100 },
+            { name: "Regrow SR", cabinet: "B", row: 4, col: 6, stripSize: 10, boxSize: 30 },
+
+            { name: "MgO 28#", cabinet: "B", row: 5, col: 1, stripSize: 10, boxSize: 28 },
+            { name: "新 Pronolol", cabinet: "B", row: 5, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Vit. B C 28#", cabinet: "B", row: 5, col: 3, stripSize: 10, boxSize: 28 },
+            { name: "Traceton", cabinet: "B", row: 5, col: 4, stripSize: 10, boxSize: 100 },
+            { name: "Oxbu", cabinet: "B", row: 5, col: 5, stripSize: 10, boxSize: 100 },
+
+            // ========== A 櫃 (上排右側架子，6層×6格) ==========
+            { name: "Curam", cabinet: "A", row: 1, col: 1, isBox: true, stripSize: 7, boxSize: 14 },
+            { name: "Amanda", cabinet: "A", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Feburic", cabinet: "A", row: 1, col: 3, isBox: true, stripSize: 10, boxSize: 30 },
+            { name: "Forxiga", cabinet: "A", row: 1, col: 4, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Pariet", cabinet: "A", row: 1, col: 5, isBox: true, stripSize: 7, boxSize: 28 },
+            { name: "Juxac", cabinet: "A", row: 1, col: 6, stripSize: 10, boxSize: 100 },
+
+            { name: "Glucophage", cabinet: "A", row: 2, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Olmetec", cabinet: "A", row: 2, col: 2, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Ferrum", cabinet: "A", row: 2, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Singulair 10mg", cabinet: "A", row: 2, col: 4, isBox: true, stripSize: 10, boxSize: 28 },
+            { name: "Algitab", cabinet: "A", row: 2, col: 5, stripSize: 10, boxSize: 100 },
+            { name: "Mevalotin 40mg", cabinet: "A", row: 2, col: 6, stripSize: 10, boxSize: 30 },
+
+            { name: "SOLAXIN", cabinet: "A", row: 3, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Jardiance", cabinet: "A", row: 3, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Diphenidol", cabinet: "A", row: 3, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Zoloft", cabinet: "A", row: 3, col: 4, isBox: true, stripSize: 14, boxSize: 28 },
+            { name: "Amoxicillin", cabinet: "A", row: 3, col: 5, stripSize: 10, boxSize: 100 },
+            { name: "Effexor 75", cabinet: "A", row: 3, col: 6, isBox: true, stripSize: 7, boxSize: 28 },
+
+            { name: "Creon", cabinet: "A", row: 4, col: 1, isBox: true, stripSize: 10, boxSize: 100 },
+            { name: "Predonine", cabinet: "A", row: 4, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Xyzal", cabinet: "A", row: 4, col: 3, stripSize: 10, boxSize: 30 },
+            { name: "Naposin", cabinet: "A", row: 4, col: 4, stripSize: 10, boxSize: 100 },
+            { name: "Glucobay", cabinet: "A", row: 4, col: 5, stripSize: 10, boxSize: 100 },
+            { name: "Lescol XL", cabinet: "A", row: 4, col: 6, isBox: true, stripSize: 7, boxSize: 28 },
+
+            { name: "Nexium", cabinet: "A", row: 5, col: 1, stripSize: 7, boxSize: 28 },
+            { name: "Lipanthyl", cabinet: "A", row: 5, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Baraclude 0.5mg", cabinet: "A", row: 5, col: 3, stripSize: 10, boxSize: 30 },
+            { name: "CellCept", cabinet: "A", row: 5, col: 4, stripSize: 10, boxSize: 100 },
+            { name: "Prograf 1mg", cabinet: "A", row: 5, col: 5, isBox: true, stripSize: 10, boxSize: 50 },
+            { name: "Zyprexa", cabinet: "A", row: 5, col: 6, isBox: true, stripSize: 7, boxSize: 28 },
+
+            { name: "Natrilix", cabinet: "A", row: 6, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Qtern", cabinet: "A", row: 6, col: 2, stripSize: 14, boxSize: 28 },
+            { name: "Lyrica", cabinet: "A", row: 6, col: 3, isBox: true, stripSize: 14, boxSize: 56 },
+            { name: "Nacid", cabinet: "A", row: 6, col: 6, stripSize: 10, boxSize: 100 },
+
+            // ========== J 櫃 (下排最左，抽屜+門) ==========
+            // J1 抽屜
+            { name: "Myfortic", cabinet: "J", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 120 },
+            { name: "Sulpin 200mg", cabinet: "J", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Akinfree", cabinet: "J", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 30 },
+            // J2 抽屜
+            { name: "Suzin", cabinet: "J", section: "drawer2", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Sigmart", cabinet: "J", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Baktar", cabinet: "J", section: "drawer2", row: 1, col: 3, stripSize: 10, boxSize: 20 },
+            // J 左門
+            { name: "Vimpat", cabinet: "J", section: "doorL", row: 1, col: 1, stripSize: 14, boxSize: 56 },
+            { name: "Fycompa", cabinet: "J", section: "doorL", row: 1, col: 2, stripSize: 7, boxSize: 28 },
+            // J 右門
+            { name: "Catilon", cabinet: "J", section: "doorR", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Calcium Carbonate", cabinet: "J", section: "doorR", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+
+            // ========== I 櫃 ==========
+            { name: "Azilect", cabinet: "I", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Doxaben 2mg", cabinet: "I", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Denosin", cabinet: "I", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Meptin", cabinet: "I", section: "drawer2", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Lendormin", cabinet: "I", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 20 },
+            { name: "Rivotril", cabinet: "I", section: "drawer2", row: 1, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Avodart", cabinet: "I", section: "doorL", row: 1, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Rytmonorm", cabinet: "I", section: "doorL", row: 1, col: 2, stripSize: 10, boxSize: 60 },
+            { name: "Meletin", cabinet: "I", section: "doorR", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Glunormal", cabinet: "I", section: "doorR", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+
+            // ========== H 櫃 ==========
+            { name: "Cofarin 1mg", cabinet: "H", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Antiasth", cabinet: "H", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Eliquis", cabinet: "H", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 60 },
+            { name: "Stilnox", cabinet: "H", section: "drawer2", row: 1, col: 1, stripSize: 10, boxSize: 20 },
+            { name: "Catapress", cabinet: "H", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "PLAQUENIL", cabinet: "H", section: "drawer2", row: 1, col: 3, stripSize: 10, boxSize: 60 },
+            { name: "Aleviatin", cabinet: "H", section: "doorL", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Glyxambi", cabinet: "H", section: "doorL", row: 1, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Escitalo", cabinet: "H", section: "doorR", row: 1, col: 1, stripSize: 10, boxSize: 28 },
+            { name: "Cymbalta", cabinet: "H", section: "doorR", row: 1, col: 2, isBox: true, stripSize: 7, boxSize: 28 },
+
+            // ========== G 櫃 ==========
+            { name: "Secorin", cabinet: "G", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Lexotan", cabinet: "G", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 50 },
+            { name: "Muaction", cabinet: "G", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "HARNALIDGE", cabinet: "G", section: "drawer2", row: 1, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Concor 5", cabinet: "G", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Sandel", cabinet: "G", section: "drawer2", row: 1, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Mirapex 1mg", cabinet: "G", section: "doorL", row: 1, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Advagraf 1mg", cabinet: "G", section: "doorL", row: 1, col: 2, stripSize: 10, boxSize: 50 },
+            { name: "Splotin 50mg", cabinet: "G", section: "doorR", row: 1, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Pletaal", cabinet: "G", section: "doorR", row: 1, col: 2, stripSize: 10, boxSize: 50 },
+
+            // ========== E 櫃 ==========
+            { name: "Neuquinon", cabinet: "E", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Atanaal 5mg", cabinet: "E", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Sandimmun 25", cabinet: "E", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 50 },
+            { name: "Nitrostat Sub.", cabinet: "E", section: "drawer2", row: 1, col: 1, stripSize: 10, boxSize: 25 },
+            { name: "Folina", cabinet: "E", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Dosin", cabinet: "E", section: "drawer2", row: 1, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Votan", cabinet: "E", section: "doorL", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Utrogestan", cabinet: "E", section: "doorL", row: 1, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Imolex", cabinet: "E", section: "doorR", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Visanne", cabinet: "E", section: "doorR", row: 1, col: 2, isBox: true, stripSize: 14, boxSize: 28 },
+
+            // ========== F 櫃 ==========
+            { name: "Seroquel XR 200mg", cabinet: "F", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 60 },
+            { name: "Isoptin SR", cabinet: "F", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Syntam", cabinet: "F", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Nolvadex", cabinet: "F", section: "drawer2", row: 1, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Keppra", cabinet: "F", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 60 },
+            { name: "Methylcobal", cabinet: "F", section: "drawer2", row: 1, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Ginkgocentrate", cabinet: "F", section: "doorL", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Stable 25", cabinet: "F", section: "doorL", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Sandimmun 25", cabinet: "F", section: "doorR", row: 1, col: 1, stripSize: 10, boxSize: 50 },
+            { name: "Imolex", cabinet: "F", section: "doorR", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+
+            // ========== 桌面區 ==========
+            { name: "Biocal", cabinet: "Desktop", row: 1, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Coxine", cabinet: "Desktop", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Sennapur", cabinet: "Desktop", row: 1, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Loditon", cabinet: "Desktop", row: 1, col: 4, stripSize: 10, boxSize: 100 },
+        ];
+
+        // ==================== 遊戲狀態 ====================
+        let gameState = {
+            mode: 'location',
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            timeLeft: 60,
+            questionCount: 0,
+            totalQuestions: 10,
+            currentDrug: null,
+            currentQuantity: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            wrongDrugs: [],
+            timerInterval: null,
+            isPlaying: false,
+        };
+
+        // ==================== 初始化 ====================
+        function init() {
+            generateCabinets();
+        }
+
+        function generateCabinets() {
+            // 上排架子：C, B (5層), A (6層)
+            ['C', 'B', 'A'].forEach(cab => {
+                const el = document.getElementById(`cabinet${cab}`);
+                const rows = cab === 'A' ? 6 : 5; // A櫃有6層，C和B櫃有5層
+                el.innerHTML = `
+                    <div class="cab-label">${cab} 櫃</div>
+                    <div class="shelf-grid">${generateShelfSlots(cab, rows, 6)}</div>
+                `;
+            });
+
+            // 下排櫃子：J, I, H, G, F, E (抽屜+門)
+            ['J', 'I', 'H', 'G', 'F', 'E'].forEach(cab => {
+                const el = document.getElementById(`cabinet${cab}`);
+                el.innerHTML = `
+                    <div class="cab-label">${cab} 櫃</div>
+                    <div class="drawer-section">
+                        <div class="drawer-label">抽屜 1</div>
+                        <div class="drawer-grid">${generateDrawerSlots(cab, 'drawer1')}</div>
+                        <div class="drawer-label">抽屜 2</div>
+                        <div class="drawer-grid">${generateDrawerSlots(cab, 'drawer2')}</div>
+                    </div>
+                    <div class="door-section">
+                        <div class="door">
+                            <div class="door-label">左門</div>
+                            <div class="door-grid">${generateDoorSlots(cab, 'doorL')}</div>
+                        </div>
+                        <div class="door">
+                            <div class="door-label">右門</div>
+                            <div class="door-grid">${generateDoorSlots(cab, 'doorR')}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // 桌面區 - 初始化拖拉功能
+            generateDesktopDrugs();
+            initDragAndDrop();
+        }
+
+        function generateShelfSlots(cabinet, rows, cols) {
+            let html = '';
+            for (let r = 1; r <= rows; r++) {
+                for (let c = 1; c <= cols; c++) {
+                    const drug = drugDatabase.find(d =>
+                        d.cabinet === cabinet && d.row === r && d.col === c && !d.section
+                    );
+                    const name = drug ? drug.name : '';
+                    const displayName = name.length > 10 ? name.substring(0, 10) + '..' : name;
+                    const boxClass = drug?.isBox ? 'box' : '';
+                    const draggable = name ? 'true' : 'false';
+                    html += `<div class="drug-slot ${boxClass}"
+                        draggable="${draggable}"
+                        data-cabinet="${cabinet}"
+                        data-row="${r}"
+                        data-col="${c}"
+                        data-drug-name="${name}"
+                        onclick="selectSlot(this)"
+                        title="${name}">${displayName}</div>`;
+                }
+            }
+            return html;
+        }
+
+        function generateDrawerSlots(cabinet, section) {
+            let html = '';
+            for (let c = 1; c <= 3; c++) {
+                const drug = drugDatabase.find(d =>
+                    d.cabinet === cabinet && d.section === section && d.col === c
+                );
+                const name = drug ? drug.name : '';
+                const displayName = name.length > 8 ? name.substring(0, 8) + '..' : name;
+                const boxClass = drug?.isBox ? 'box' : '';
+                const draggable = name ? 'true' : 'false';
+                html += `<div class="drug-slot ${boxClass}"
+                    draggable="${draggable}"
+                    data-cabinet="${cabinet}"
+                    data-section="${section}"
+                    data-col="${c}"
+                    data-drug-name="${name}"
+                    onclick="selectSlot(this)"
+                    title="${name}">${displayName}</div>`;
+            }
+            return html;
+        }
+
+        function generateDoorSlots(cabinet, section) {
+            let html = '';
+            for (let c = 1; c <= 2; c++) {
+                const drug = drugDatabase.find(d =>
+                    d.cabinet === cabinet && d.section === section && d.col === c
+                );
+                const name = drug ? drug.name : '';
+                const displayName = name.length > 7 ? name.substring(0, 7) + '..' : name;
+                const boxClass = drug?.isBox ? 'box' : '';
+                const draggable = name ? 'true' : 'false';
+                html += `<div class="drug-slot ${boxClass}"
+                    draggable="${draggable}"
+                    data-cabinet="${cabinet}"
+                    data-section="${section}"
+                    data-col="${c}"
+                    data-drug-name="${name}"
+                    onclick="selectSlot(this)"
+                    title="${name}">${displayName}</div>`;
+            }
+            return html;
+        }
+
+        function generateDesktopDrugs() {
+            // 桌面藥品區已整合至中間遊戲狀態區，此函數保留但不執行
+        }
+
+        function initDragAndDrop() {
+            const zones = ['leftHandZone', 'rightHandZone'];
+
+            zones.forEach(zoneId => {
+                const zone = document.getElementById(zoneId);
+                if (!zone) return;
+                const content = zone.querySelector('.drop-zone-content');
+
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('drag-over');
+                });
+
+                zone.addEventListener('dragleave', (e) => {
+                    if (!zone.contains(e.relatedTarget)) {
+                        zone.classList.remove('drag-over');
+                    }
+                });
+
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+
+                    const drugName = e.dataTransfer.getData('text/plain');
+                    const sourceType = e.dataTransfer.getData('source-type');
+
+                    // 檢查是否已經在左右手區存在此藥品
+                    let existingDrug = document.querySelector(`.draggable-drug[data-drug-name="${drugName}"]`);
+
+                    if (existingDrug) {
+                        // 移動已存在的藥品
+                        existingDrug.classList.remove('in-left', 'in-right');
+                        if (zoneId === 'leftHandZone') {
+                            existingDrug.classList.add('in-left');
+                        } else if (zoneId === 'rightHandZone') {
+                            existingDrug.classList.add('in-right');
+                        }
+                        content.appendChild(existingDrug);
+                    } else if (sourceType === 'cabinet' && drugName) {
+                        // 從藥櫃拖入：建立新的藥品標籤
+                        const newDrug = document.createElement('div');
+                        newDrug.className = 'draggable-drug';
+                        newDrug.draggable = true;
+                        newDrug.dataset.drugName = drugName;
+                        newDrug.textContent = drugName;
+                        newDrug.onclick = function() { selectDesktopDrug(this); };
+
+                        if (zoneId === 'leftHandZone') {
+                            newDrug.classList.add('in-left');
+                        } else if (zoneId === 'rightHandZone') {
+                            newDrug.classList.add('in-right');
+                        }
+
+                        content.appendChild(newDrug);
+                    }
+                });
+            });
+
+            // 為桌面可拖曳藥品綁定事件
+            document.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('draggable-drug')) {
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', e.target.dataset.drugName);
+                    e.dataTransfer.setData('source-type', 'desktop');
+                    e.dataTransfer.effectAllowed = 'move';
+                }
+                // 藥櫃格子拖曳
+                else if (e.target.classList.contains('drug-slot') && e.target.dataset.drugName) {
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', e.target.dataset.drugName);
+                    e.dataTransfer.setData('source-type', 'cabinet');
+                    e.dataTransfer.effectAllowed = 'copy';
+                }
+            });
+
+            document.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('draggable-drug') || e.target.classList.contains('drug-slot')) {
+                    e.target.classList.remove('dragging');
+                }
+            });
+        }
+
+        function selectDesktopDrug(element) {
+            if (!gameState.isPlaying || !gameState.currentDrug) return;
+
+            const drugName = element.dataset.drugName;
+            const drug = gameState.currentDrug;
+
+            // 檢查是否為正確的藥品
+            if (drug.cabinet === 'Desktop' && drug.name === drugName) {
+                element.style.outline = '3px solid #4caf50';
+                if (gameState.mode === 'location') {
+                    handleCorrect();
+                } else {
+                    showFeedback('✓ 位置正確！請輸入數量', 'correct');
+                }
+            } else if (drug.cabinet === 'Desktop') {
+                element.style.outline = '3px solid #f44336';
+                handleWrong();
+                // 高亮正確的藥品
+                const correctDrug = document.querySelector(`.draggable-drug[data-drug-name="${drug.name}"]`);
+                if (correctDrug) {
+                    correctDrug.style.outline = '3px solid #ffc107';
+                    correctDrug.style.animation = 'glow 1s infinite';
+                }
+            }
+        }
+
+        // ==================== 遊戲控制 ====================
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            resetGame();
+            gameState.isPlaying = true;
+            startTimer();
+            nextQuestion();
+        }
+
+        function resetGame() {
+            gameState.score = 0;
+            gameState.combo = 0;
+            gameState.maxCombo = 0;
+            gameState.timeLeft = gameState.mode === 'rush' ? 90 : 60;
+            gameState.questionCount = 0;
+            gameState.correctCount = 0;
+            gameState.wrongCount = 0;
+            gameState.wrongDrugs = [];
+            updateDisplay();
+        }
+
+        function restartGame() {
+            document.getElementById('resultScreen').classList.remove('active');
+            resetGame();
+            gameState.isPlaying = true;
+            startTimer();
+            nextQuestion();
+        }
+
+        function startTimer() {
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft--;
+                document.getElementById('timer').textContent = gameState.timeLeft;
+                if (gameState.timeLeft <= 0) endGame();
+            }, 1000);
+        }
+
+        function endGame() {
+            gameState.isPlaying = false;
+            clearInterval(gameState.timerInterval);
+
+            const accuracy = gameState.correctCount + gameState.wrongCount > 0
+                ? Math.round((gameState.correctCount / (gameState.correctCount + gameState.wrongCount)) * 100)
+                : 0;
+
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('finalAccuracy').textContent = accuracy;
+            document.getElementById('finalCombo').textContent = gameState.maxCombo;
+
+            if (gameState.wrongDrugs.length > 0) {
+                document.getElementById('errorDrugs').innerHTML =
+                    `<br>常搞混的藥品：<br>${gameState.wrongDrugs.slice(0, 5).join('<br>')}`;
+            }
+
+            document.getElementById('resultScreen').classList.add('active');
+        }
+
+        function setMode(mode) {
+            gameState.mode = mode;
+            document.querySelectorAll('.mode-btn-sm').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.mode-btn-sm.${mode}`).classList.add('active');
+
+            // 切換顯示模式
+            const isLocation = (mode === 'location');
+            document.getElementById('locationModeRow').style.display = isLocation ? 'flex' : 'none';
+            document.getElementById('dispensingModeRow').style.display = isLocation ? 'none' : 'flex';
+
+            if (gameState.isPlaying) {
+                resetGame();
+                startTimer();
+                nextQuestion();
+            }
+        }
+
+        // 計數器調整函數
+        function adjustCount(type, delta) {
+            const elementId = type + 'Count';
+            const el = document.getElementById(elementId);
+            let val = parseInt(el.textContent) || 0;
+            val = Math.max(0, val + delta);
+            el.textContent = val;
+        }
+
+        function resetCounters() {
+            document.getElementById('boxCount').textContent = '0';
+            document.getElementById('stripCount').textContent = '0';
+            document.getElementById('looseCount').textContent = '0';
+        }
+
+        // ==================== 題目邏輯 ====================
+        function nextQuestion() {
+            if (!gameState.isPlaying) return;
+
+            const randomIndex = Math.floor(Math.random() * drugDatabase.length);
+            gameState.currentDrug = drugDatabase[randomIndex];
+
+            if (gameState.mode !== 'location') {
+                gameState.currentQuantity = generateQuantity(gameState.currentDrug);
+            }
+
+            const drug = gameState.currentDrug;
+
+            // 位置提示
+            let locationHint = drug.cabinet;
+            if (drug.section) {
+                const sectionNames = { drawer1: '抽屜1', drawer2: '抽屜2', doorL: '左門', doorR: '右門' };
+                locationHint += ` - ${sectionNames[drug.section] || ''}`;
+            }
+
+            if (gameState.mode === 'location') {
+                // 定位模式
+                document.getElementById('drugNameLocation').textContent = drug.name;
+                document.getElementById('drugHintLocation').textContent = `位置：${locationHint}`;
+            } else {
+                // 配藥/測試模式
+                document.getElementById('drugNameDispensing').textContent = drug.name;
+                document.getElementById('drugQuantityBadge').textContent = `×${gameState.currentQuantity}`;
+                document.getElementById('specBadge').textContent = `${drug.stripSize}/排 ${drug.boxSize}/盒`;
+            }
+
+            document.querySelectorAll('.drug-slot').forEach(slot => {
+                slot.classList.remove('correct', 'wrong', 'highlight');
+            });
+
+            // 重置桌面藥品樣式
+            document.querySelectorAll('.draggable-drug').forEach(drug => {
+                drug.style.outline = '';
+                drug.style.animation = '';
+            });
+
+            // 重置計數器
+            resetCounters();
+
+            gameState.questionCount++;
+            updateDisplay();
+        }
+
+        function generateQuantity(drug) {
+            const options = [
+                drug.stripSize,
+                drug.stripSize * 2,
+                drug.boxSize,
+                drug.boxSize + drug.stripSize,
+                Math.floor(drug.stripSize * 1.5),
+                drug.stripSize * 3 + Math.floor(drug.stripSize / 2),
+            ];
+            return options[Math.floor(Math.random() * options.length)];
+        }
+
+        // ==================== 使用者互動 ====================
+        function selectSlot(element) {
+            if (!gameState.isPlaying || !gameState.currentDrug) return;
+
+            const cabinet = element.dataset.cabinet;
+            const section = element.dataset.section || null;
+            const row = element.dataset.row ? parseInt(element.dataset.row) : null;
+            const col = parseInt(element.dataset.col);
+            const drug = gameState.currentDrug;
+
+            let isCorrect = drug.cabinet === cabinet && drug.col === col;
+            if (drug.section) {
+                isCorrect = isCorrect && drug.section === section;
+            } else if (drug.row) {
+                isCorrect = isCorrect && drug.row === row;
+            }
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                if (gameState.mode === 'location') {
+                    handleCorrect();
+                } else {
+                    showFeedback('✓ 位置正確！請輸入數量', 'correct');
+                }
+            } else {
+                element.classList.add('wrong');
+                handleWrong();
+                highlightCorrectSlot();
+            }
+        }
+
+        function highlightCorrectSlot() {
+            const drug = gameState.currentDrug;
+
+            // 桌面藥品特殊處理
+            if (drug.cabinet === 'Desktop') {
+                const correctDrug = document.querySelector(`.draggable-drug[data-drug-name="${drug.name}"]`);
+                if (correctDrug) {
+                    correctDrug.style.outline = '3px solid #ffc107';
+                    correctDrug.style.animation = 'glow 1s infinite';
+                }
+                return;
+            }
+
+            let selector;
+            if (drug.section) {
+                selector = `[data-cabinet="${drug.cabinet}"][data-section="${drug.section}"][data-col="${drug.col}"]`;
+            } else if (drug.row) {
+                selector = `[data-cabinet="${drug.cabinet}"][data-row="${drug.row}"][data-col="${drug.col}"]`;
+            } else {
+                selector = `[data-cabinet="${drug.cabinet}"][data-col="${drug.col}"]`;
+            }
+            const correctSlot = document.querySelector(selector);
+            if (correctSlot) correctSlot.classList.add('highlight');
+        }
+
+        function submitDispensing() {
+            if (!gameState.isPlaying || !gameState.currentDrug) return;
+
+            const boxCount = parseInt(document.getElementById('boxCount').value) || 0;
+            const stripCount = parseInt(document.getElementById('stripCount').value) || 0;
+            const looseCount = parseInt(document.getElementById('looseCount').value) || 0;
+
+            const drug = gameState.currentDrug;
+            const totalDispensed = (boxCount * drug.boxSize) + (stripCount * drug.stripSize) + looseCount;
+
+            if (totalDispensed === gameState.currentQuantity) {
+                handleCorrect();
+            } else {
+                handleWrong();
+                showFeedback(`✗ 錯誤！應配 ${gameState.currentQuantity} 顆`, 'wrong');
+            }
+        }
+
+        function handleCorrect() {
+            gameState.combo++;
+            if (gameState.combo > gameState.maxCombo) gameState.maxCombo = gameState.combo;
+
+            const comboBonus = Math.min(gameState.combo * 10, 50);
+            const points = 100 + comboBonus;
+            gameState.score += points;
+            gameState.correctCount++;
+
+            showFeedback(`✓ 正確！+${points}`, 'correct');
+            updateDisplay();
+
+            setTimeout(() => {
+                if (gameState.mode === 'rush' || gameState.questionCount < gameState.totalQuestions) {
+                    nextQuestion();
+                } else {
+                    endGame();
+                }
+            }, 700);
+        }
+
+        function handleWrong() {
+            gameState.combo = 0;
+            gameState.wrongCount++;
+            gameState.score = Math.max(0, gameState.score - 20);
+
+            if (!gameState.wrongDrugs.includes(gameState.currentDrug.name)) {
+                gameState.wrongDrugs.push(gameState.currentDrug.name);
+            }
+
+            updateDisplay();
+
+            if (gameState.mode === 'location') {
+                showFeedback('✗ 錯誤！', 'wrong');
+                setTimeout(() => {
+                    if (gameState.questionCount < gameState.totalQuestions) {
+                        nextQuestion();
+                    } else {
+                        endGame();
+                    }
+                }, 1200);
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('combo').textContent = gameState.combo;
+            document.getElementById('questionCount').textContent =
+                gameState.mode === 'rush'
+                    ? `${gameState.correctCount}`
+                    : `${gameState.questionCount}/${gameState.totalQuestions}`;
+        }
+
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type}`;
+            feedback.style.display = 'block';
+            setTimeout(() => { feedback.style.display = 'none'; }, 1200);
+        }
+
+        init();
+    </script>
+</body>
+</html>
