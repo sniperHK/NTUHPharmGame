@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +29,7 @@
             background: #eceff1;
             border-radius: 12px;
             padding: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
         /* ========== 中間遊戲區整合樣式 ========== */
@@ -74,14 +75,29 @@
             background: white;
             padding: 4px 10px;
             border-radius: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .stat-label { font-size: 0.85rem; }
-        .stat-val { font-weight: bold; font-size: 1rem; }
-        .stat-val.time { color: #e74c3c; }
-        .stat-val.score { color: #27ae60; }
-        .stat-val.combo { color: #f39c12; }
+        .stat-label {
+            font-size: 0.85rem;
+        }
+
+        .stat-val {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .stat-val.time {
+            color: #e74c3c;
+        }
+
+        .stat-val.score {
+            color: #27ae60;
+        }
+
+        .stat-val.combo {
+            color: #f39c12;
+        }
 
         .mode-selector-compact {
             display: flex;
@@ -100,14 +116,28 @@
             font-weight: bold;
         }
 
-        .mode-btn-sm.location { background: #3498db; color: white; }
-        .mode-btn-sm.dispensing { background: #27ae60; color: white; }
-        .mode-btn-sm.rush { background: #e74c3c; color: white; }
+        .mode-btn-sm.location {
+            background: #3498db;
+            color: white;
+        }
 
-        .mode-btn-sm:hover { transform: scale(1.05); }
+        .mode-btn-sm.dispensing {
+            background: #27ae60;
+            color: white;
+        }
+
+        .mode-btn-sm.rush {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .mode-btn-sm:hover {
+            transform: scale(1.05);
+        }
+
         .mode-btn-sm.active {
             transform: scale(1.1);
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
         .prescription-compact {
@@ -119,6 +149,69 @@
         .prescription-compact.position-ok {
             outline: 2px solid rgba(76, 175, 80, 0.9);
             box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+        }
+
+        /* 配藥/測試模式：小提示（不跳置中視窗） */
+        .inline-hint {
+            margin-top: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: none;
+            line-height: 1.2;
+        }
+
+        .inline-hint.show {
+            display: block;
+        }
+
+        .inline-hint.correct {
+            color: #2e7d32;
+            background: rgba(76, 175, 80, 0.12);
+            border: 1px solid rgba(76, 175, 80, 0.45);
+        }
+
+        .inline-hint.wrong {
+            color: #c62828;
+            background: rgba(244, 67, 54, 0.12);
+            border: 1px solid rgba(244, 67, 54, 0.45);
+        }
+
+        /* 桌面區常備藥（Biocal / Coxine / Sennapur / Loditon） */
+        .desktop-drug-pool {
+            margin-top: 6px;
+            background: rgba(255, 255, 255, 0.65);
+            border-radius: 8px;
+            padding: 6px 8px;
+            border: 1px dashed rgba(93, 64, 55, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .desktop-drug-pool-label {
+            font-size: 0.75rem;
+            color: #5d4037;
+            font-weight: bold;
+            flex: 0 0 auto;
+        }
+
+        .desktop-drug-pool-items {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex: 0 1 auto;
+        }
+
+        .desktop-drug-pool .draggable-drug {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            cursor: pointer;
         }
 
         /* 定位模式：置中顯示 */
@@ -208,8 +301,13 @@
             line-height: 1;
         }
 
-        .counter-minus:hover { background: #e0e0e0; }
-        .counter-minus:active { background: #d0d0d0; }
+        .counter-minus:hover {
+            background: #e0e0e0;
+        }
+
+        .counter-minus:active {
+            background: #d0d0d0;
+        }
 
         .counter-circle {
             width: 32px;
@@ -225,12 +323,12 @@
             cursor: pointer;
             user-select: none;
             transition: all 0.15s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .counter-circle:hover {
             transform: scale(1.1);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
         }
 
         .counter-circle:active {
@@ -254,7 +352,10 @@
             transition: all 0.2s;
         }
 
-        .submit-btn-sm:hover { background: #219a52; transform: scale(1.05); }
+        .submit-btn-sm:hover {
+            background: #219a52;
+            transform: scale(1.05);
+        }
 
         .section-label {
             font-size: 0.85rem;
@@ -450,19 +551,43 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
         }
 
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px); }
-            75% { transform: translateX(4px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-4px);
+            }
+
+            75% {
+                transform: translateX(4px);
+            }
         }
 
         @keyframes glow {
-            0%, 100% { box-shadow: 0 0 5px #ffc107; }
-            50% { box-shadow: 0 0 15px #ffc107; }
+
+            0%,
+            100% {
+                box-shadow: 0 0 5px #ffc107;
+            }
+
+            50% {
+                box-shadow: 0 0 15px #ffc107;
+            }
         }
 
         /* 桌面區 - 工作區域 */
@@ -503,7 +628,7 @@
             margin-bottom: 6px;
             text-align: center;
             padding: 3px 6px;
-            background: rgba(255,255,255,0.7);
+            background: rgba(255, 255, 255, 0.7);
             border-radius: 4px;
         }
 
@@ -516,13 +641,31 @@
             min-height: 40px;
         }
 
-        .left-hand-zone { border-color: #1976d2; }
-        .left-hand-zone .drop-zone-label { color: #1565c0; }
-        .left-hand-zone.drag-over { background: #bbdefb; border-color: #1976d2; }
+        .left-hand-zone {
+            border-color: #1976d2;
+        }
 
-        .right-hand-zone { border-color: #c62828; }
-        .right-hand-zone .drop-zone-label { color: #c62828; }
-        .right-hand-zone.drag-over { background: #ffcdd2; border-color: #c62828; }
+        .left-hand-zone .drop-zone-label {
+            color: #1565c0;
+        }
+
+        .left-hand-zone.drag-over {
+            background: #bbdefb;
+            border-color: #1976d2;
+        }
+
+        .right-hand-zone {
+            border-color: #c62828;
+        }
+
+        .right-hand-zone .drop-zone-label {
+            color: #c62828;
+        }
+
+        .right-hand-zone.drag-over {
+            background: #ffcdd2;
+            border-color: #c62828;
+        }
 
         .draggable-drug {
             background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
@@ -538,7 +681,7 @@
 
         .draggable-drug:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .draggable-drug.dragging {
@@ -571,14 +714,34 @@
             animation: fadeInOut 1.2s;
         }
 
-        .feedback.correct { background: #4caf50; color: white; }
-        .feedback.wrong { background: #f44336; color: white; }
+        .feedback.correct {
+            background: #4caf50;
+            color: white;
+        }
+
+        .feedback.wrong {
+            background: #f44336;
+            color: white;
+        }
 
         @keyframes fadeInOut {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            80% { opacity: 1; }
-            100% { opacity: 0; }
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
         }
 
         /* 開始畫面 */
@@ -600,7 +763,7 @@
             color: white;
             font-size: 2.5rem;
             margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .start-screen p {
@@ -624,10 +787,12 @@
 
         .start-btn:hover {
             transform: scale(1.08);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .start-screen.hidden { display: none; }
+        .start-screen.hidden {
+            display: none;
+        }
 
         /* 結果畫面 */
         .result-screen {
@@ -636,7 +801,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0, 0, 0, 0.85);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -644,7 +809,9 @@
             z-index: 2000;
         }
 
-        .result-screen.active { display: flex; }
+        .result-screen.active {
+            display: flex;
+        }
 
         .result-card {
             background: white;
@@ -684,36 +851,123 @@
 
         /* RWD */
         @media (max-width: 1400px) {
-            .drawer-cabinet { padding: 6px; }
-            .door-grid { gap: 2px; }
-            .center-game-zone { min-width: 250px; }
+            .drawer-cabinet {
+                padding: 6px;
+            }
+
+            .door-grid {
+                gap: 2px;
+            }
+
+            .center-game-zone {
+                min-width: 250px;
+            }
         }
 
         @media (max-width: 1200px) {
-            .top-shelf-row { flex-wrap: wrap; }
-            .bottom-cabinet-row { flex-wrap: wrap; }
-            .shelf-cabinet { flex: 1 1 30%; min-width: 280px; }
-            .drawer-cabinet { flex: 1 1 30%; min-width: 150px; }
-            .desktop-area-container { flex-direction: column; }
-            .center-game-zone { flex: 1; min-width: 100%; order: -1; }
-            .drop-zone { min-height: 60px; }
+            .top-shelf-row {
+                flex-wrap: wrap;
+            }
+
+            .bottom-cabinet-row {
+                flex-wrap: wrap;
+            }
+
+            .shelf-cabinet {
+                flex: 1 1 30%;
+                min-width: 280px;
+            }
+
+            .drawer-cabinet {
+                flex: 1 1 30%;
+                min-width: 150px;
+            }
+
+            .desktop-area-container {
+                flex-direction: column;
+            }
+
+            .center-game-zone {
+                flex: 1;
+                min-width: 100%;
+                order: -1;
+            }
+
+            .drop-zone {
+                min-height: 60px;
+            }
         }
 
         @media (max-width: 900px) {
-            .drawer-cabinet { flex: 1 1 45%; }
-            .shelf-cabinet { flex: 1 1 45%; }
+            .drawer-cabinet {
+                flex: 1 1 45%;
+            }
+
+            .shelf-cabinet {
+                flex: 1 1 45%;
+            }
         }
 
         @media (max-width: 768px) {
-            .compact-header { font-size: 0.85rem; }
-            .drug-slot { font-size: 0.5rem; min-height: 28px; }
-            .shelf-grid { grid-template-columns: repeat(3, 1fr); }
-            .drawer-cabinet { flex: 1 1 100%; }
-            .shelf-cabinet { flex: 1 1 100%; }
-            .desktop-area-container { padding: 8px; gap: 10px; }
+            .compact-header {
+                font-size: 0.85rem;
+            }
+
+            .drug-slot {
+                font-size: 0.5rem;
+                min-height: 28px;
+            }
+
+            .shelf-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .drawer-cabinet {
+                flex: 1 1 100%;
+            }
+
+            .shelf-cabinet {
+                flex: 1 1 100%;
+            }
+
+            .desktop-area-container {
+                padding: 8px;
+                gap: 10px;
+            }
+        }
+
+        /* Drug Image Styling */
+        #drugImageOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            cursor: pointer;
+            backdrop-filter: blur(2px);
+        }
+
+        #drugImageOverlay img {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            border: 4px solid white;
+            object-fit: contain;
+            transition: transform 0.2s;
+        }
+
+        #drugImageOverlay img:hover {
+            transform: scale(1.02);
         }
     </style>
 </head>
+
 <body>
     <!-- 開始畫面 -->
     <div class="start-screen" id="startScreen">
@@ -722,7 +976,7 @@
         <button class="start-btn" onclick="startGame()">開始訓練</button>
     </div>
 
-    <!-- 結果畫面 -->
+    <!-- Result Screen -->
     <div class="result-screen" id="resultScreen">
         <div class="result-card">
             <h2>🎉 訓練完成！</h2>
@@ -736,11 +990,16 @@
         </div>
     </div>
 
+    <!-- Drug Image Overlay -->
+    <div id="drugImageOverlay" onclick="toggleDrugImage()">
+        <img id="overlayImage" src="" alt="Drug Preview">
+    </div>
+
     <!-- 主遊戲區 -->
     <div class="container">
         <div class="cabinet-area">
             <!-- 上排：C - B - A 開放式架子 -->
-            <div class="section-label">▲ 上排架子（由左至右：C → B → A）</div>
+            <!-- 上排：C - B - A 開放式架子 -->
             <div class="top-shelf-row">
                 <div class="shelf-cabinet" id="cabinetC"></div>
                 <div class="shelf-cabinet" id="cabinetB"></div>
@@ -751,6 +1010,7 @@
             <div class="desktop-area-container">
                 <div class="drop-zone left-hand-zone" id="leftHandZone">
                     <div class="drop-zone-label">🖐️ 左手區</div>
+                    <!-- Drug Image Removed from here -->
                     <div class="drop-zone-content" id="leftHandContent"></div>
                 </div>
 
@@ -760,10 +1020,14 @@
                         💊 台大藥劑部 調劑訓練 <span class="version-tag">2025/12/17</span>
                     </div>
                     <div class="compact-stats">
-                        <div class="mini-stat"><span class="stat-label">⏱</span><span class="stat-val time" id="timer">60</span></div>
-                        <div class="mini-stat"><span class="stat-label">🎯</span><span class="stat-val score" id="score">0</span></div>
-                        <div class="mini-stat"><span class="stat-label">🔥</span><span class="stat-val combo" id="combo">0</span></div>
-                        <div class="mini-stat"><span class="stat-label">📝</span><span class="stat-val" id="questionCount">0/10</span></div>
+                        <div class="mini-stat"><span class="stat-label">⏱</span><span class="stat-val time"
+                                id="timer">60</span></div>
+                        <div class="mini-stat"><span class="stat-label">🎯</span><span class="stat-val score"
+                                id="score">0</span></div>
+                        <div class="mini-stat"><span class="stat-label">🔥</span><span class="stat-val combo"
+                                id="combo">0</span></div>
+                        <div class="mini-stat"><span class="stat-label">📝</span><span class="stat-val"
+                                id="questionCount">0/10</span></div>
                     </div>
                     <div class="mode-selector-compact">
                         <button class="mode-btn-sm location active" onclick="setMode('location')">🗺️ 定位</button>
@@ -789,17 +1053,24 @@
                                 </div>
                                 <div class="counter-item">
                                     <button class="counter-minus" onclick="adjustCount('strip', -1)">−</button>
-                                    <div class="counter-circle" onclick="adjustCount('strip', 1)" id="stripCount">0</div>
+                                    <div class="counter-circle" onclick="adjustCount('strip', 1)" id="stripCount">0
+                                    </div>
                                     <span class="counter-label">排</span>
                                 </div>
                                 <div class="counter-item">
                                     <button class="counter-minus" onclick="adjustCount('loose', -1)">−</button>
-                                    <div class="counter-circle" onclick="adjustCount('loose', 1)" id="looseCount">0</div>
+                                    <div class="counter-circle" onclick="adjustCount('loose', 1)" id="looseCount">0
+                                    </div>
                                     <span class="counter-label">顆</span>
                                 </div>
                             </div>
                             <button class="submit-btn-sm" onclick="submitDispensing()">✓</button>
                         </div>
+                        <div class="inline-hint" id="inlineHint" aria-live="polite"></div>
+                    </div>
+                    <div class="desktop-drug-pool" id="desktopDrugPool" aria-label="桌面區常備藥">
+                        <span class="desktop-drug-pool-label">桌面區：</span>
+                        <div class="desktop-drug-pool-items" id="desktopDrugPoolItems"></div>
                     </div>
                 </div>
 
@@ -810,7 +1081,7 @@
             </div>
 
             <!-- 下排：J - I - H - G - F - E 抽屜櫃 -->
-            <div class="section-label">▼ 下排櫃子（由左至右：J → I → H → G → F → E）</div>
+            <!-- 下排：J - I - H - G - F - E 抽屜櫃 -->
             <div class="bottom-cabinet-row">
                 <div class="drawer-cabinet" id="cabinetJ"></div>
                 <div class="drawer-cabinet" id="cabinetI"></div>
@@ -823,6 +1094,8 @@
     </div>
 
     <div class="feedback" id="feedback"></div>
+
+    <script src="drug_map.js"></script>
 
     <script>
         // ==================== 藥品資料庫 (根據實際位置圖 20251217) ====================
@@ -1028,12 +1301,14 @@
             totalQuestions: 10,
             currentDrug: null,
             currentQuantity: 0,
+            positionConfirmed: false,
             correctCount: 0,
             wrongCount: 0,
             wrongDrugs: [],
             timerInterval: null,
             isPlaying: false,
         };
+        let inlineHintTimeout = null;
 
         // ==================== 初始化 ====================
         function init() {
@@ -1149,7 +1424,27 @@
         }
 
         function generateDesktopDrugs() {
-            // 桌面藥品區已整合至中間遊戲狀態區，此函數保留但不執行
+            const pool = document.getElementById('desktopDrugPool');
+            const container = document.getElementById('desktopDrugPoolItems');
+            if (!container) return;
+
+            container.innerHTML = '';
+            const desktopDrugs = drugDatabase.filter(d => d.cabinet === 'Desktop');
+
+            desktopDrugs.forEach(drug => {
+                const item = document.createElement('div');
+                item.className = 'draggable-drug';
+                item.draggable = false;
+                item.dataset.drugName = drug.name;
+                item.textContent = drug.name;
+                item.title = drug.name;
+                item.onclick = function () { selectDesktopDrug(this); };
+                container.appendChild(item);
+            });
+
+            if (pool) {
+                pool.style.display = desktopDrugs.length ? 'flex' : 'none';
+            }
         }
 
         function initDragAndDrop() {
@@ -1197,7 +1492,7 @@
                         newDrug.draggable = true;
                         newDrug.dataset.drugName = drugName;
                         newDrug.textContent = drugName;
-                        newDrug.onclick = function() { selectDesktopDrug(this); };
+                        newDrug.onclick = function () { selectDesktopDrug(this); };
 
                         if (zoneId === 'leftHandZone') {
                             newDrug.classList.add('in-left');
@@ -1278,6 +1573,8 @@
             gameState.correctCount = 0;
             gameState.wrongCount = 0;
             gameState.wrongDrugs = [];
+            gameState.positionConfirmed = false;
+            clearInlineHint();
             updateDisplay();
         }
 
@@ -1327,6 +1624,7 @@
             const isLocation = (mode === 'location');
             document.getElementById('locationModeRow').style.display = isLocation ? 'flex' : 'none';
             document.getElementById('dispensingModeRow').style.display = isLocation ? 'none' : 'flex';
+            clearInlineHint();
 
             if (gameState.isPlaying) {
                 resetGame();
@@ -1359,6 +1657,8 @@
 
             const prescriptionCard = document.querySelector('.prescription-compact');
             if (prescriptionCard) prescriptionCard.classList.remove('position-ok');
+            gameState.positionConfirmed = false;
+            clearInlineHint();
 
             if (gameState.mode !== 'location') {
                 gameState.currentQuantity = generateQuantity(gameState.currentDrug);
@@ -1384,6 +1684,10 @@
                 document.getElementById('specBadge').textContent = `${drug.stripSize}/排 ${drug.boxSize}/盒`;
             }
 
+            // Update Image
+            updateDrugImage(drug.name);
+
+
             document.querySelectorAll('.drug-slot').forEach(slot => {
                 slot.classList.remove('correct', 'wrong', 'highlight');
             });
@@ -1399,6 +1703,21 @@
 
             gameState.questionCount++;
             updateDisplay();
+        }
+
+        function showDrugImage(drugName) {
+            // Check if drugImageMap is loaded
+            if (typeof drugImageMap !== 'undefined' && drugImageMap[drugName]) {
+                const overlay = document.getElementById('drugImageOverlay');
+                const imgEl = document.getElementById('overlayImage');
+                imgEl.src = drugImageMap[drugName];
+                overlay.style.display = 'flex';
+            }
+        }
+
+        function toggleDrugImage() {
+            const overlay = document.getElementById('drugImageOverlay');
+            overlay.style.display = 'none';
         }
 
         function generateQuantity(drug) {
@@ -1432,6 +1751,9 @@
 
             if (isCorrect) {
                 element.classList.add('correct');
+                // Show Image Overlay on Click
+                showDrugImage(drug.name);
+
                 if (gameState.mode === 'location') {
                     handleCorrect();
                 } else {
@@ -1447,6 +1769,7 @@
         function markPositionConfirmed() {
             const prescriptionCard = document.querySelector('.prescription-compact');
             if (prescriptionCard) prescriptionCard.classList.add('position-ok');
+            gameState.positionConfirmed = true;
         }
 
         function highlightCorrectSlot() {
@@ -1477,6 +1800,13 @@
         function submitDispensing() {
             if (!gameState.isPlaying || !gameState.currentDrug) return;
 
+            if (!gameState.positionConfirmed) {
+                handleWrong();
+                highlightCorrectSlot();
+                showInlineHint('✗ 請先點選正確位置', 'wrong');
+                return;
+            }
+
             const boxCount = parseInt(document.getElementById('boxCount').textContent) || 0;
             const stripCount = parseInt(document.getElementById('stripCount').textContent) || 0;
             const looseCount = parseInt(document.getElementById('looseCount').textContent) || 0;
@@ -1488,7 +1818,7 @@
                 handleCorrect();
             } else {
                 handleWrong();
-                showFeedback(`✗ 錯誤！應配 ${gameState.currentQuantity} 顆`, 'wrong');
+                showInlineHint(`✗ 顆數錯誤！應配 ${gameState.currentQuantity} 顆`, 'wrong');
             }
         }
 
@@ -1501,7 +1831,11 @@
             gameState.score += points;
             gameState.correctCount++;
 
-            showFeedback(`✓ 正確！+${points}`, 'correct');
+            if (gameState.mode === 'location') {
+                showFeedback(`✓ 正確！+${points}`, 'correct');
+            } else {
+                showInlineHint(`✓ 正確！+${points}`, 'correct');
+            }
             updateDisplay();
 
             setTimeout(() => {
@@ -1553,7 +1887,32 @@
             setTimeout(() => { feedback.style.display = 'none'; }, 1200);
         }
 
+        function clearInlineHint() {
+            const hint = document.getElementById('inlineHint');
+            if (!hint) return;
+            hint.textContent = '';
+            hint.className = 'inline-hint';
+            hint.style.display = 'none';
+            if (inlineHintTimeout) clearTimeout(inlineHintTimeout);
+            inlineHintTimeout = null;
+        }
+
+        function showInlineHint(message, type) {
+            const hint = document.getElementById('inlineHint');
+            if (!hint) return;
+            hint.textContent = message;
+            hint.className = `inline-hint show ${type}`;
+            hint.style.display = 'block';
+            if (inlineHintTimeout) clearTimeout(inlineHintTimeout);
+            inlineHintTimeout = setTimeout(() => {
+                hint.style.display = 'none';
+                hint.className = 'inline-hint';
+                hint.textContent = '';
+            }, 900);
+        }
+
         init();
     </script>
 </body>
+
 </html>

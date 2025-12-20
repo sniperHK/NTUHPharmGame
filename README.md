@@ -307,3 +307,45 @@ EdTech Support 藥劑部_AG/
 - **垂直結構**：
     - **上半部**：兩個垂直排列的 **抽屜 (Drawers)**。
     - **下半部**：**雙開門櫃 (Split Doors)**，分為左右兩扇門 (Left/Right)。
+
+## 交接事項 (Handover 2025/12/20)
+
+### 藥品資料庫擴充與影像整合 (Drug Database Enrichment)
+
+目前已完成藥品影像自動爬蟲與遊戲介面整合的開發。
+
+#### 1. 爬蟲程式 (`scrape_drugs.py`)
+- **功能**: 自動從台大醫院藥劑部網站爬取藥品代碼、中文名與圖片。
+- **狀態**: 支援中斷續傳 (Resume functionality)。
+- **資料位置**: 
+  - 圖片: `Reference/DrugData/Images/`
+  - 資料表: `Reference/DrugData/drug_data.csv`
+- **執行方式**:
+  ```bash
+  python3 scrape_drugs.py
+  ```
+- **注意事項**:
+  - 部分藥品若在網站上無 PDF 連結 (Instruction/EducationPapers)，爬蟲可能會失敗 (標記為 `Unknown` 或無圖片)。
+  - 目前大部分藥品圖片 (已下載 > 80項) 均已成功截取。
+
+#### 2. 遊戲整合 (`dispensing-game.html`)
+- **功能**: 在「配藥模式」與「定位模式」中，選中藥品時會顯示該藥品的實體照片及包裝資訊。
+- **實作方式**: 
+  - 前端透過 `drug_map.js` 將藥名對應到圖片路徑。
+  - 圖片顯示於「左手區/藥品資訊區」。
+  - 包裝顆數資訊 (`一排幾顆`, `一盒幾顆`) 維持使用 `drugDatabase` 內的設定。
+
+#### 3. 更新圖片對應表 (`drug_map.js`)
+若資料庫 (`drug_data.csv`) 有更新，建議用腳本重新產生給前端使用的 `drug_map.js`（可選輸出 `drug_map.json`）：
+
+```bash
+python3 scripts/generate_drug_map.py --out-json drug_map.json
+python3 scripts/audit_drug_data.py
+```
+
+#### 4. 待辦事項 / 已知問題
+- [ ] **檢查缺失影像**: 檢查 `drug_data.csv` 中 `ImageFile` 欄位為空的項目，需人工確認或手動補圖。
+- [ ] **驗證影像對應**: 目前採自動對應 `OriginalName`，需在遊戲中實際確認圖片是否正確。
+- [ ] **Lixiana 詳細頁面結構**: 爬蟲優先抓取 `-A.jpg` (正面照)，若無則抓取第一張圖。
+
+---
