@@ -1,16 +1,21 @@
-.DS_Store
-.AppleDouble
-.LSOverride
 
-Thumbs.db
-Desktop.ini
+# Python files and caches
+*.py
+__pycache__/
+*.pyc
 
-.vscode/
-.idea/
-*.swp
-*.swo
-
+# Local data & logs
+drug_list.txt
 *.log
 
-# Local reference materials (do not publish)
-Reference/
+# Scripts directory (maintenance only)
+scripts/
+
+# Deprecated / Debug / Test HTML files
+initial.html
+Lixiana_Detail.html
+debug_curl.html
+debug_fail.html
+
+# OS generated files
+.DS_Store
