@@ -104,6 +104,7 @@
             justify-content: center;
             gap: 6px;
             flex-wrap: wrap;
+            margin-bottom: 8px;
         }
 
         .mode-btn-sm {
@@ -426,6 +427,45 @@
             flex: 1;
             min-width: 0;
             border: 3px solid #4e342e;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hover effects for Zoom interaction */
+        .shelf-cabinet,
+        .drawer-section,
+        .door {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .shelf-cabinet:hover,
+        .drawer-section:hover,
+        .door:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.6);
+            z-index: 5;
+            position: relative;
+        }
+
+        /* Continuous Hint Styling */
+        .cabinet-hint-active {
+            box-shadow: 0 0 0 4px #ffc107, 0 0 20px #ffc107 !important;
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% {
+                box-shadow: 0 0 0 4px #ffc107;
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(255, 193, 7, 0.5);
+            }
+
+            100% {
+                box-shadow: 0 0 0 4px #ffc107;
+            }
         }
 
         .drawer-cabinet .cab-label {
@@ -997,18 +1037,21 @@
         }
 
         /* 讓櫃位標籤和抽屜標籤可點擊 */
-        .cab-label, .drawer-label {
+        .cab-label,
+        .drawer-label {
             cursor: pointer;
             user-select: none;
             transition: all 0.3s;
         }
 
-        .cab-label:hover, .drawer-label:hover {
+        .cab-label:hover,
+        .drawer-label:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: scale(1.05);
         }
 
-        .cab-label::after, .drawer-label::after {
+        .cab-label::after,
+        .drawer-label::after {
             content: ' 🔍';
             font-size: 0.8em;
             opacity: 0.6;
@@ -1070,11 +1113,14 @@
 
         /* 閃爍動畫 */
         @keyframes blink-highlight {
-            0%, 100% {
+
+            0%,
+            100% {
                 background: #f1c40f;
                 transform: scale(1);
                 box-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
             }
+
             50% {
                 background: #e74c3c;
                 transform: scale(1.1);
@@ -1758,6 +1804,41 @@
                 const drug = gameState.currentDrug;
                 let hintText = `📍 位於 ${drug.cabinet} 櫃`;
 
+                // Logic to highlight the broad area (Continuous Hint)
+                // First remove old highlights
+                document.querySelectorAll('.cabinet-hint-active').forEach(el => el.classList.remove('cabinet-hint-active'));
+
+                let targetElementId = null;
+                let targetSubSelector = null;
+
+                if (['C', 'B', 'A'].includes(drug.cabinet)) {
+                    targetElementId = `cabinet${drug.cabinet}`;
+                    // For shelf cabinets, highlight the whole cabinet
+                    const el = document.getElementById(targetElementId);
+                    if (el) el.classList.add('cabinet-hint-active');
+                } else {
+                    // For drawer cabinets
+                    targetElementId = `cabinet${drug.cabinet}`;
+                    const cabEl = document.getElementById(targetElementId);
+
+                    if (drug.section && cabEl) {
+                        // Find the specific section (drawer/door) inside
+                        if (drug.section === 'drawer1') {
+                            const el = cabEl.querySelector('.drawer-section:nth-of-type(1)');
+                            if (el) el.classList.add('cabinet-hint-active');
+                        } else if (drug.section === 'drawer2') {
+                            const el = cabEl.querySelector('.drawer-section:nth-of-type(2)');
+                            if (el) el.classList.add('cabinet-hint-active');
+                        } else if (drug.section === 'doorL') {
+                            const el = cabEl.querySelector('.door:nth-of-type(1)');
+                            if (el) el.classList.add('cabinet-hint-active');
+                        } else if (drug.section === 'doorR') {
+                            const el = cabEl.querySelector('.door:nth-of-type(2)');
+                            if (el) el.classList.add('cabinet-hint-active');
+                        }
+                    }
+                }
+
                 if (drug.section) {
                     const sectionNames = {
                         'drawer1': '抽屜 1',
@@ -1775,6 +1856,9 @@
             } else {
                 hintElement.textContent = '';
                 hintElement.style.display = 'none';
+
+                // Remove highlights
+                document.querySelectorAll('.cabinet-hint-active').forEach(el => el.classList.remove('cabinet-hint-active'));
             }
         }
 
@@ -1842,33 +1926,48 @@
                 const el = document.getElementById(`cabinet${cab}`);
                 const rows = cab === 'A' ? 6 : 5; // A櫃有6層，C和B櫃有5層
                 el.innerHTML = `
-                    <div class="cab-label" onclick="openCabinetZoom('${cab}', 'shelf')">${cab} 櫃</div>
+                    <div class="cab-label">${cab} 櫃 (點擊放大)</div>
                     <div class="shelf-grid">${generateShelfSlots(cab, rows, 6)}</div>
                 `;
+                // Make entire cabinet clickable
+                el.onclick = function (e) {
+                    // Verify we aren't clicking a slot directly (slots have their own logic)
+                    if (!e.target.classList.contains('drug-slot')) {
+                        openCabinetZoom(cab, 'shelf');
+                    }
+                };
             });
 
             // 下排櫃子：J, I, H, G, F, E (抽屜+門)
             ['J', 'I', 'H', 'G', 'F', 'E'].forEach(cab => {
                 const el = document.getElementById(`cabinet${cab}`);
                 el.innerHTML = `
-                    <div class="cab-label" onclick="openCabinetZoom('${cab}', 'drawer')">${cab} 櫃</div>
-                    <div class="drawer-section">
-                        <div class="drawer-label" onclick="openDrawerZoom('${cab}', 'drawer1')">抽屜 1</div>
-                        <div class="drawer-grid">${generateDrawerSlots(cab, 'drawer1')}</div>
-                        <div class="drawer-label" onclick="openDrawerZoom('${cab}', 'drawer2')">抽屜 2</div>
-                        <div class="drawer-grid">${generateDrawerSlots(cab, 'drawer2')}</div>
+                    <div class="cab-label">${cab} 櫃</div>
+                    <div class="drawer-section" onclick="openDrawerZoom('${cab}', 'drawer1'); event.stopPropagation();">
+                        <div class="drawer-label">抽屜 1</div>
+                        <div class="drawer-grid pointer-events-none">${generateDrawerSlots(cab, 'drawer1')}</div>
+                    </div>
+                    <div class="drawer-section" onclick="openDrawerZoom('${cab}', 'drawer2'); event.stopPropagation();">
+                        <div class="drawer-label">抽屜 2</div>
+                        <div class="drawer-grid pointer-events-none">${generateDrawerSlots(cab, 'drawer2')}</div>
                     </div>
                     <div class="door-section">
-                        <div class="door">
-                            <div class="door-label" onclick="openDrawerZoom('${cab}', 'doorL')">左門</div>
-                            <div class="door-grid">${generateDoorSlots(cab, 'doorL')}</div>
+                        <div class="door" onclick="openDrawerZoom('${cab}', 'doorL'); event.stopPropagation();">
+                            <div class="door-label">左門</div>
+                            <div class="door-grid pointer-events-none">${generateDoorSlots(cab, 'doorL')}</div>
                         </div>
-                        <div class="door">
-                            <div class="door-label" onclick="openDrawerZoom('${cab}', 'doorR')">右門</div>
-                            <div class="door-grid">${generateDoorSlots(cab, 'doorR')}</div>
+                        <div class="door" onclick="openDrawerZoom('${cab}', 'doorR'); event.stopPropagation();">
+                            <div class="door-label">右門</div>
+                            <div class="door-grid pointer-events-none">${generateDoorSlots(cab, 'doorR')}</div>
                         </div>
                     </div>
                 `;
+            });
+
+            // Re-enable pointer events for slots inside
+            document.querySelectorAll('.drawer-grid .drug-slot, .door-grid .drug-slot').forEach(slot => {
+                slot.parentElement.style.pointerEvents = 'none'; // Grid container ignores clicks
+                slot.style.pointerEvents = 'auto'; // But slots inside accept them
             });
 
             // 桌面區 - 初始化拖拉功能
@@ -2132,8 +2231,22 @@
             document.getElementById('finalCombo').textContent = gameState.maxCombo;
 
             if (gameState.wrongDrugs.length > 0) {
+                const uniqueWrong = [...new Set(gameState.wrongDrugs)];
+                const wrongList = uniqueWrong.slice(0, 8).map(name => {
+                    const d = drugDatabase.find(x => x.name === name);
+                    let loc = `${d.cabinet}櫃`;
+                    if (d.section) loc += `-${d.section.replace('drawer', '抽屜').replace('door', '門')}`;
+                    else if (d.row) loc += `-${d.row}行`;
+                    return `<li>${name} <span style="color:#666; font-size:0.9em">(${loc})</span></li>`;
+                }).join('');
+
                 document.getElementById('errorDrugs').innerHTML =
-                    `<br>常搞混的藥品：<br>${gameState.wrongDrugs.slice(0, 5).join('<br>')}`;
+                    `<div style="text-align:left; margin-top:15px;">
+                        <p style="font-weight:bold; color:#d35400;">⚠️ 需加強的藥品：</p>
+                        <ul style="font-size:0.95rem; line-height:1.6; padding-left:20px;">${wrongList}</ul>
+                     </div>`;
+            } else {
+                document.getElementById('errorDrugs').innerHTML = '<p style="color:#27ae60; margin-top:15px;">✨ 完美！沒有錯誤藥品！</p>';
             }
 
             document.getElementById('resultScreen').classList.add('active');
@@ -2314,6 +2427,9 @@
             if (drug) {
                 document.getElementById('specBadge').textContent = `${drug.stripSize}/排 ${drug.boxSize}/盒`;
             }
+
+            // 位置確認後重置計數器，讓用戶從零開始計算正確的藥品
+            resetCounters();
         }
 
         function highlightCorrectSlot() {
