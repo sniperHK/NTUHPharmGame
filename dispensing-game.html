@@ -1597,72 +1597,54 @@
                     }
                 }
             } else {
-                // 下排櫃子放大（2列布局：上排抽屜，下排門）
-                grid.className = 'zoom-grid';
-                grid.innerHTML = `
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%;">
-                        <!-- 左半部：抽屜 1 -->
-                        <div>
-                            <h3 class="zoom-section-title">抽屜 1</h3>
-                            <div class="zoom-grid drawer-layout">`;
+                // 下排櫃子放大（2x2網格布局）
+                grid.className = '';
+                grid.style.display = 'grid';
+                grid.style.gridTemplateColumns = '1fr 1fr';
+                grid.style.gap = '15px';
+                grid.innerHTML = '';
 
+                // 抽屜 1（左上）
+                let drawer1HTML = '<div><h3 class="zoom-section-title">抽屜 1</h3><div class="zoom-grid drawer-layout">';
                 for (let c = 1; c <= 3; c++) {
                     const drug = drugDatabase.find(d =>
                         d.cabinet === cabinet && d.section === 'drawer1' && d.col === c
                     );
-                    grid.innerHTML += createZoomDrugCard(drug, cabinet, null, c, 'drawer1').outerHTML;
+                    drawer1HTML += createZoomDrugCard(drug, cabinet, null, c, 'drawer1').outerHTML;
                 }
+                drawer1HTML += '</div></div>';
 
-                grid.innerHTML += `
-                            </div>
-                        </div>
-                        <!-- 右半部：抽屜 2 -->
-                        <div>
-                            <h3 class="zoom-section-title">抽屜 2</h3>
-                            <div class="zoom-grid drawer-layout">`;
-
+                // 抽屜 2（右上）
+                let drawer2HTML = '<div><h3 class="zoom-section-title">抽屜 2</h3><div class="zoom-grid drawer-layout">';
                 for (let c = 1; c <= 3; c++) {
                     const drug = drugDatabase.find(d =>
                         d.cabinet === cabinet && d.section === 'drawer2' && d.col === c
                     );
-                    grid.innerHTML += createZoomDrugCard(drug, cabinet, null, c, 'drawer2').outerHTML;
+                    drawer2HTML += createZoomDrugCard(drug, cabinet, null, c, 'drawer2').outerHTML;
                 }
+                drawer2HTML += '</div></div>';
 
-                grid.innerHTML += `
-                            </div>
-                        </div>
-                        <!-- 左半部：左門 -->
-                        <div>
-                            <h3 class="zoom-section-title">左門</h3>
-                            <div class="zoom-grid door-layout">`;
-
+                // 左門（左下）
+                let doorLHTML = '<div><h3 class="zoom-section-title">左門</h3><div class="zoom-grid door-layout">';
                 for (let c = 1; c <= 2; c++) {
                     const drug = drugDatabase.find(d =>
                         d.cabinet === cabinet && d.section === 'doorL' && d.col === c
                     );
-                    grid.innerHTML += createZoomDrugCard(drug, cabinet, null, c, 'doorL').outerHTML;
+                    doorLHTML += createZoomDrugCard(drug, cabinet, null, c, 'doorL').outerHTML;
                 }
+                doorLHTML += '</div></div>';
 
-                grid.innerHTML += `
-                            </div>
-                        </div>
-                        <!-- 右半部：右門 -->
-                        <div>
-                            <h3 class="zoom-section-title">右門</h3>
-                            <div class="zoom-grid door-layout">`;
-
+                // 右門（右下）
+                let doorRHTML = '<div><h3 class="zoom-section-title">右門</h3><div class="zoom-grid door-layout">';
                 for (let c = 1; c <= 2; c++) {
                     const drug = drugDatabase.find(d =>
                         d.cabinet === cabinet && d.section === 'doorR' && d.col === c
                     );
-                    grid.innerHTML += createZoomDrugCard(drug, cabinet, null, c, 'doorR').outerHTML;
+                    doorRHTML += createZoomDrugCard(drug, cabinet, null, c, 'doorR').outerHTML;
                 }
+                doorRHTML += '</div></div>';
 
-                grid.innerHTML += `
-                            </div>
-                        </div>
-                    </div>
-                `;
+                grid.innerHTML = drawer1HTML + drawer2HTML + doorLHTML + doorRHTML;
             }
 
             modal.classList.add('active');
