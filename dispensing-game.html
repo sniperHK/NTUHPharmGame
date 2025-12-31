@@ -849,6 +849,231 @@
             margin-top: 20px;
         }
 
+        /* ========== 放大視窗樣式 ========== */
+        .zoom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .zoom-modal.active {
+            display: flex;
+        }
+
+        .zoom-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            position: relative;
+        }
+
+        .zoom-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .zoom-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .zoom-close {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .zoom-close:hover {
+            background: #c0392b;
+        }
+
+        .zoom-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .zoom-grid.shelf-layout {
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        .zoom-grid.drawer-layout {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .zoom-grid.door-layout {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .zoom-drug-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .zoom-drug-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .zoom-drug-card.box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-color: #f39c12;
+        }
+
+        .zoom-drug-card.empty {
+            background: #ecf0f1;
+            border-color: #bdc3c7;
+            cursor: default;
+        }
+
+        .zoom-drug-card.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .zoom-drug-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .zoom-drug-info {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .zoom-drug-location {
+            font-size: 0.85rem;
+            color: #3498db;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* 讓櫃位標籤和抽屜標籤可點擊 */
+        .cab-label, .drawer-label {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s;
+        }
+
+        .cab-label:hover, .drawer-label:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .cab-label::after, .drawer-label::after {
+            content: ' 🔍';
+            font-size: 0.8em;
+            opacity: 0.6;
+        }
+
+        /* ========== 提示模式樣式 ========== */
+        .hint-controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .hint-toggle {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hint-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .hint-toggle.active {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .show-hint-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .show-hint-btn:hover {
+            transform: scale(1.05);
+            background: #2980b9;
+        }
+
+        .show-hint-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 閃爍動畫 */
+        @keyframes blink-highlight {
+            0%, 100% {
+                background: #f1c40f;
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
+            }
+            50% {
+                background: #e74c3c;
+                transform: scale(1.1);
+                box-shadow: 0 0 30px rgba(231, 76, 60, 1);
+            }
+        }
+
+        .slot-blinking {
+            animation: blink-highlight 1s ease-in-out 3;
+            z-index: 100;
+        }
+
         /* RWD */
         @media (max-width: 1400px) {
             .drawer-cabinet {
@@ -1034,6 +1259,15 @@
                         <button class="mode-btn-sm dispensing" onclick="setMode('dispensing')">💊 配藥</button>
                         <button class="mode-btn-sm rush" onclick="setMode('rush')">⚡ 測試</button>
                     </div>
+                    <div class="hint-controls">
+                        <button class="hint-toggle" id="hintToggle" onclick="toggleHintMode()">
+                            <span id="hintToggleIcon">💡</span>
+                            <span id="hintToggleText">提示模式：關閉</span>
+                        </button>
+                        <button class="show-hint-btn" id="showHintBtn" onclick="showLocationHint()" disabled>
+                            🎯 顯示位置提示
+                        </button>
+                    </div>
                     <div class="prescription-compact">
                         <!-- 定位模式：單行顯示 -->
                         <div class="location-mode-row" id="locationModeRow">
@@ -1094,6 +1328,17 @@
     </div>
 
     <div class="feedback" id="feedback"></div>
+
+    <!-- 放大視窗模態 -->
+    <div class="zoom-modal" id="zoomModal">
+        <div class="zoom-content">
+            <div class="zoom-header">
+                <div class="zoom-title" id="zoomTitle"></div>
+                <button class="zoom-close" onclick="closeZoomModal()">✕</button>
+            </div>
+            <div class="zoom-grid" id="zoomGrid"></div>
+        </div>
+    </div>
 
     <script src="drug_map.js"></script>
 
@@ -1307,6 +1552,7 @@
             wrongDrugs: [],
             timerInterval: null,
             isPlaying: false,
+            hintMode: false, // 提示模式開關
         };
         let inlineHintTimeout = null;
 
@@ -1315,13 +1561,271 @@
             generateCabinets();
         }
 
+        // ==================== 放大視窗功能 ====================
+        function openCabinetZoom(cabinet, type) {
+            const modal = document.getElementById('zoomModal');
+            const title = document.getElementById('zoomTitle');
+            const grid = document.getElementById('zoomGrid');
+
+            title.textContent = `${cabinet} 櫃詳細檢視`;
+
+            if (type === 'shelf') {
+                // 上排架子放大
+                const rows = cabinet === 'A' ? 6 : 5;
+                grid.className = 'zoom-grid shelf-layout';
+                grid.innerHTML = '';
+
+                for (let r = 1; r <= rows; r++) {
+                    for (let c = 1; c <= 6; c++) {
+                        const drug = drugDatabase.find(d =>
+                            d.cabinet === cabinet && d.row === r && d.col === c && !d.section
+                        );
+                        grid.appendChild(createZoomDrugCard(drug, cabinet, r, c));
+                    }
+                }
+            } else {
+                // 下排櫃子放大（顯示所有區域）
+                grid.className = 'zoom-grid';
+                grid.innerHTML = '<div style="grid-column: 1/-1; margin-bottom: 20px;">';
+
+                // 抽屜 1
+                grid.innerHTML += '<h3 style="margin-bottom: 10px; color: #2c3e50;">抽屜 1</h3>';
+                grid.innerHTML += '<div class="zoom-grid drawer-layout" style="margin-bottom: 30px;">';
+                for (let c = 1; c <= 3; c++) {
+                    const drug = drugDatabase.find(d =>
+                        d.cabinet === cabinet && d.section === 'drawer1' && d.col === c
+                    );
+                    grid.innerHTML += createZoomDrugCard(drug, cabinet, null, c, 'drawer1').outerHTML;
+                }
+                grid.innerHTML += '</div>';
+
+                // 抽屜 2
+                grid.innerHTML += '<h3 style="margin-bottom: 10px; color: #2c3e50;">抽屜 2</h3>';
+                grid.innerHTML += '<div class="zoom-grid drawer-layout" style="margin-bottom: 30px;">';
+                for (let c = 1; c <= 3; c++) {
+                    const drug = drugDatabase.find(d =>
+                        d.cabinet === cabinet && d.section === 'drawer2' && d.col === c
+                    );
+                    grid.innerHTML += createZoomDrugCard(drug, cabinet, null, c, 'drawer2').outerHTML;
+                }
+                grid.innerHTML += '</div>';
+
+                // 左門和右門
+                grid.innerHTML += '<h3 style="margin-bottom: 10px; color: #2c3e50;">門</h3>';
+                grid.innerHTML += '<div class="zoom-grid door-layout">';
+                // 左門
+                for (let c = 1; c <= 2; c++) {
+                    const drug = drugDatabase.find(d =>
+                        d.cabinet === cabinet && d.section === 'doorL' && d.col === c
+                    );
+                    grid.innerHTML += createZoomDrugCard(drug, cabinet, null, c, 'doorL').outerHTML;
+                }
+                // 右門
+                for (let c = 1; c <= 2; c++) {
+                    const drug = drugDatabase.find(d =>
+                        d.cabinet === cabinet && d.section === 'doorR' && d.col === c
+                    );
+                    grid.innerHTML += createZoomDrugCard(drug, cabinet, null, c, 'doorR').outerHTML;
+                }
+                grid.innerHTML += '</div></div>';
+            }
+
+            modal.classList.add('active');
+        }
+
+        function openDrawerZoom(cabinet, section) {
+            const modal = document.getElementById('zoomModal');
+            const title = document.getElementById('zoomTitle');
+            const grid = document.getElementById('zoomGrid');
+
+            const sectionNames = {
+                'drawer1': '抽屜 1',
+                'drawer2': '抽屜 2',
+                'doorL': '左門',
+                'doorR': '右門'
+            };
+
+            title.textContent = `${cabinet} 櫃 - ${sectionNames[section]}詳細檢視`;
+
+            const cols = section.startsWith('door') ? 2 : 3;
+            grid.className = `zoom-grid ${section.startsWith('door') ? 'door-layout' : 'drawer-layout'}`;
+            grid.innerHTML = '';
+
+            for (let c = 1; c <= cols; c++) {
+                const drug = drugDatabase.find(d =>
+                    d.cabinet === cabinet && d.section === section && d.col === c
+                );
+                grid.appendChild(createZoomDrugCard(drug, cabinet, null, c, section));
+            }
+
+            modal.classList.add('active');
+        }
+
+        function createZoomDrugCard(drug, cabinet, row, col, section) {
+            const card = document.createElement('div');
+
+            if (!drug) {
+                card.className = 'zoom-drug-card empty';
+                card.innerHTML = '<div class="zoom-drug-name">空格</div>';
+                return card;
+            }
+
+            card.className = `zoom-drug-card ${drug.isBox ? 'box' : ''}`;
+
+            let locationText = '';
+            if (row) {
+                locationText = `位置：第 ${row} 行 第 ${col} 列`;
+            } else if (section) {
+                locationText = `位置：第 ${col} 格`;
+            }
+
+            card.innerHTML = `
+                <div class="zoom-drug-name">${drug.name}</div>
+                <div class="zoom-drug-info">
+                    ${drug.isBox ? '盒裝' : '散裝'}<br>
+                    一排：${drug.stripSize} 顆<br>
+                    一盒：${drug.boxSize} 顆
+                </div>
+                <div class="zoom-drug-location">${locationText}</div>
+            `;
+
+            // 點擊卡片時顯示藥品圖片
+            card.onclick = () => showDrugImage(drug.name);
+
+            return card;
+        }
+
+        function closeZoomModal() {
+            const modal = document.getElementById('zoomModal');
+            modal.classList.remove('active');
+        }
+
+        // 點擊模態背景關閉
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('zoomModal');
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeZoomModal();
+                }
+            });
+        });
+
+        // ==================== 提示模式功能 ====================
+        function toggleHintMode() {
+            gameState.hintMode = !gameState.hintMode;
+            const toggle = document.getElementById('hintToggle');
+            const icon = document.getElementById('hintToggleIcon');
+            const text = document.getElementById('hintToggleText');
+
+            if (gameState.hintMode) {
+                toggle.classList.add('active');
+                icon.textContent = '✨';
+                text.textContent = '提示模式：開啟';
+            } else {
+                toggle.classList.remove('active');
+                icon.textContent = '💡';
+                text.textContent = '提示模式：關閉';
+            }
+
+            // 如果遊戲正在進行，更新提示顯示
+            if (gameState.isPlaying && gameState.currentDrug) {
+                updateHintDisplay();
+            }
+        }
+
+        function updateHintDisplay() {
+            const hintElement = document.getElementById('drugHintLocation');
+            if (!hintElement) return;
+
+            if (gameState.hintMode && gameState.currentDrug) {
+                const drug = gameState.currentDrug;
+                let hintText = `📍 位於 ${drug.cabinet} 櫃`;
+
+                if (drug.section) {
+                    const sectionNames = {
+                        'drawer1': '抽屜 1',
+                        'drawer2': '抽屜 2',
+                        'doorL': '左門',
+                        'doorR': '右門'
+                    };
+                    hintText += ` - ${sectionNames[drug.section]}`;
+                } else if (drug.row) {
+                    hintText += ` - 第 ${drug.row} 行`;
+                }
+
+                hintElement.textContent = hintText;
+                hintElement.style.display = 'inline';
+            } else {
+                hintElement.textContent = '';
+                hintElement.style.display = 'none';
+            }
+        }
+
+        function showLocationHint() {
+            if (!gameState.currentDrug || !gameState.isPlaying) return;
+
+            const drug = gameState.currentDrug;
+
+            // 找到正確的藥品格子
+            let targetSlot = null;
+
+            if (drug.cabinet === 'Desktop') {
+                // 桌面區藥品
+                const desktopItems = document.querySelectorAll('#desktopDrugPoolItems .desktop-drug-item');
+                desktopItems.forEach(item => {
+                    if (item.textContent.trim() === drug.name) {
+                        targetSlot = item;
+                    }
+                });
+            } else {
+                // 櫃位藥品
+                const allSlots = document.querySelectorAll('.drug-slot');
+                allSlots.forEach(slot => {
+                    const slotCabinet = slot.dataset.cabinet;
+                    const slotRow = parseInt(slot.dataset.row);
+                    const slotCol = parseInt(slot.dataset.col);
+                    const slotSection = slot.dataset.section;
+
+                    let isMatch = slotCabinet === drug.cabinet;
+
+                    if (drug.section) {
+                        isMatch = isMatch && slotSection === drug.section && slotCol === drug.col;
+                    } else {
+                        isMatch = isMatch && slotRow === drug.row && slotCol === drug.col && !slotSection;
+                    }
+
+                    if (isMatch) {
+                        targetSlot = slot;
+                    }
+                });
+            }
+
+            if (targetSlot) {
+                // 移除之前的閃爍效果
+                document.querySelectorAll('.slot-blinking').forEach(el => {
+                    el.classList.remove('slot-blinking');
+                });
+
+                // 添加閃爍效果
+                targetSlot.classList.add('slot-blinking');
+
+                // 捲動到該元素
+                targetSlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // 3秒後移除閃爍效果
+                setTimeout(() => {
+                    targetSlot.classList.remove('slot-blinking');
+                }, 3000);
+            }
+        }
+
         function generateCabinets() {
             // 上排架子：C, B (5層), A (6層)
             ['C', 'B', 'A'].forEach(cab => {
                 const el = document.getElementById(`cabinet${cab}`);
                 const rows = cab === 'A' ? 6 : 5; // A櫃有6層，C和B櫃有5層
                 el.innerHTML = `
-                    <div class="cab-label">${cab} 櫃</div>
+                    <div class="cab-label" onclick="openCabinetZoom('${cab}', 'shelf')">${cab} 櫃</div>
                     <div class="shelf-grid">${generateShelfSlots(cab, rows, 6)}</div>
                 `;
             });
@@ -1330,20 +1834,20 @@
             ['J', 'I', 'H', 'G', 'F', 'E'].forEach(cab => {
                 const el = document.getElementById(`cabinet${cab}`);
                 el.innerHTML = `
-                    <div class="cab-label">${cab} 櫃</div>
+                    <div class="cab-label" onclick="openCabinetZoom('${cab}', 'drawer')">${cab} 櫃</div>
                     <div class="drawer-section">
-                        <div class="drawer-label">抽屜 1</div>
+                        <div class="drawer-label" onclick="openDrawerZoom('${cab}', 'drawer1')">抽屜 1</div>
                         <div class="drawer-grid">${generateDrawerSlots(cab, 'drawer1')}</div>
-                        <div class="drawer-label">抽屜 2</div>
+                        <div class="drawer-label" onclick="openDrawerZoom('${cab}', 'drawer2')">抽屜 2</div>
                         <div class="drawer-grid">${generateDrawerSlots(cab, 'drawer2')}</div>
                     </div>
                     <div class="door-section">
                         <div class="door">
-                            <div class="door-label">左門</div>
+                            <div class="door-label" onclick="openDrawerZoom('${cab}', 'doorL')">左門</div>
                             <div class="door-grid">${generateDoorSlots(cab, 'doorL')}</div>
                         </div>
                         <div class="door">
-                            <div class="door-label">右門</div>
+                            <div class="door-label" onclick="openDrawerZoom('${cab}', 'doorR')">右門</div>
                             <div class="door-grid">${generateDoorSlots(cab, 'doorR')}</div>
                         </div>
                     </div>
@@ -1599,6 +2103,9 @@
             gameState.isPlaying = false;
             clearInterval(gameState.timerInterval);
 
+            // 禁用提示按鈕
+            document.getElementById('showHintBtn').disabled = true;
+
             const accuracy = gameState.correctCount + gameState.wrongCount > 0
                 ? Math.round((gameState.correctCount / (gameState.correctCount + gameState.wrongCount)) * 100)
                 : 0;
@@ -1666,17 +2173,15 @@
 
             const drug = gameState.currentDrug;
 
-            // 位置提示
-            let locationHint = drug.cabinet;
-            if (drug.section) {
-                const sectionNames = { drawer1: '抽屜1', drawer2: '抽屜2', doorL: '左門', doorR: '右門' };
-                locationHint += ` - ${sectionNames[drug.section] || ''}`;
-            }
-
             if (gameState.mode === 'location') {
                 // 定位模式
                 document.getElementById('drugNameLocation').textContent = drug.name;
-                document.getElementById('drugHintLocation').textContent = `位置：${locationHint}`;
+
+                // 根據提示模式決定是否顯示位置提示
+                updateHintDisplay();
+
+                // 啟用「顯示位置提示」按鈕
+                document.getElementById('showHintBtn').disabled = false;
             } else {
                 // 配藥/測試模式
                 document.getElementById('drugNameDispensing').textContent = drug.name;
