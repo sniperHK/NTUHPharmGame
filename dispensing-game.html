@@ -870,9 +870,9 @@
         .zoom-content {
             background: white;
             border-radius: 15px;
-            padding: 30px;
-            max-width: 90%;
-            max-height: 90%;
+            padding: 20px;
+            max-width: 85%;
+            max-height: 85vh;
             overflow: auto;
             position: relative;
         }
@@ -881,13 +881,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 2px solid #e0e0e0;
         }
 
         .zoom-title {
-            font-size: 1.8rem;
+            font-size: 1.3rem;
             font-weight: bold;
             color: #333;
         }
@@ -897,14 +897,15 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 1.5rem;
+            width: 32px;
+            height: 32px;
+            font-size: 1.2rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background 0.3s;
+            flex-shrink: 0;
         }
 
         .zoom-close:hover {
@@ -913,8 +914,8 @@
 
         .zoom-grid {
             display: grid;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 12px;
         }
 
         .zoom-grid.shelf-layout {
@@ -932,10 +933,10 @@
         .zoom-drug-card {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             border: 2px solid #3498db;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 8px;
+            padding: 12px;
             text-align: center;
-            min-height: 120px;
+            min-height: 85px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -965,22 +966,34 @@
         }
 
         .zoom-drug-name {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: bold;
             color: #2c3e50;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
         .zoom-drug-info {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #7f8c8d;
+            line-height: 1.4;
         }
 
         .zoom-drug-location {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #3498db;
-            margin-top: 5px;
+            margin-top: 4px;
             font-weight: 500;
+        }
+
+        .zoom-section-title {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            margin-top: 12px;
+            color: #2c3e50;
+        }
+
+        .zoom-section-title:first-child {
+            margin-top: 0;
         }
 
         /* 讓櫃位標籤和抽屜標籤可點擊 */
@@ -1586,11 +1599,11 @@
             } else {
                 // 下排櫃子放大（顯示所有區域）
                 grid.className = 'zoom-grid';
-                grid.innerHTML = '<div style="grid-column: 1/-1; margin-bottom: 20px;">';
+                grid.innerHTML = '<div style="grid-column: 1/-1;">';
 
                 // 抽屜 1
-                grid.innerHTML += '<h3 style="margin-bottom: 10px; color: #2c3e50;">抽屜 1</h3>';
-                grid.innerHTML += '<div class="zoom-grid drawer-layout" style="margin-bottom: 30px;">';
+                grid.innerHTML += '<h3 class="zoom-section-title">抽屜 1</h3>';
+                grid.innerHTML += '<div class="zoom-grid drawer-layout" style="margin-bottom: 15px;">';
                 for (let c = 1; c <= 3; c++) {
                     const drug = drugDatabase.find(d =>
                         d.cabinet === cabinet && d.section === 'drawer1' && d.col === c
@@ -1600,8 +1613,8 @@
                 grid.innerHTML += '</div>';
 
                 // 抽屜 2
-                grid.innerHTML += '<h3 style="margin-bottom: 10px; color: #2c3e50;">抽屜 2</h3>';
-                grid.innerHTML += '<div class="zoom-grid drawer-layout" style="margin-bottom: 30px;">';
+                grid.innerHTML += '<h3 class="zoom-section-title">抽屜 2</h3>';
+                grid.innerHTML += '<div class="zoom-grid drawer-layout" style="margin-bottom: 15px;">';
                 for (let c = 1; c <= 3; c++) {
                     const drug = drugDatabase.find(d =>
                         d.cabinet === cabinet && d.section === 'drawer2' && d.col === c
@@ -1611,7 +1624,7 @@
                 grid.innerHTML += '</div>';
 
                 // 左門和右門
-                grid.innerHTML += '<h3 style="margin-bottom: 10px; color: #2c3e50;">門</h3>';
+                grid.innerHTML += '<h3 class="zoom-section-title">門</h3>';
                 grid.innerHTML += '<div class="zoom-grid door-layout">';
                 // 左門
                 for (let c = 1; c <= 2; c++) {
