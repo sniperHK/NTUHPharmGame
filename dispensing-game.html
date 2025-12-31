@@ -2264,6 +2264,22 @@
             const col = parseInt(element.dataset.col);
             const drug = gameState.currentDrug;
 
+            // 找到被點擊的藥品資料
+            const clickedDrug = drugDatabase.find(d => {
+                let match = d.cabinet === cabinet && d.col === col;
+                if (section) {
+                    match = match && d.section === section;
+                } else if (row) {
+                    match = match && d.row === row && !d.section;
+                }
+                return match;
+            });
+
+            // 更新規格資訊顯示（配藥/測試模式）
+            if (clickedDrug && gameState.mode !== 'location') {
+                document.getElementById('specBadge').textContent = `${clickedDrug.stripSize}/排 ${clickedDrug.boxSize}/盒`;
+            }
+
             let isCorrect = drug.cabinet === cabinet && drug.col === col;
             if (drug.section) {
                 isCorrect = isCorrect && drug.section === section;
@@ -2292,6 +2308,12 @@
             const prescriptionCard = document.querySelector('.prescription-compact');
             if (prescriptionCard) prescriptionCard.classList.add('position-ok');
             gameState.positionConfirmed = true;
+
+            // 確保規格資訊正確顯示為題目藥品的規格
+            const drug = gameState.currentDrug;
+            if (drug) {
+                document.getElementById('specBadge').textContent = `${drug.stripSize}/排 ${drug.boxSize}/盒`;
+            }
         }
 
         function highlightCorrectSlot() {
