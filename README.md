@@ -2,7 +2,12 @@
 
 > 透過網頁遊戲化學習，降低新進藥師與實習學生的調劑訓練壓力
 
-遊戲網址（GitHub Pages）：https://sniperHK.github.io/NTUHPharmGame/
+## 遊戲連結
+
+| 平台 | 網址 |
+|------|------|
+| **Netlify** | https://ntuh-pharm-game.netlify.app |
+| **GitHub Pages** | https://sniperHK.github.io/NTUHPharmGame/ |
 
 ## 專案背景
 
