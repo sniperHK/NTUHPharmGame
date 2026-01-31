@@ -1513,10 +1513,12 @@
 
             // ========== J 櫃 (下排最左，僅抽屜) ==========
             // ========== J 櫃 ==========
-            // J1 抽屜 (根據 PDF 20260129 版)
+            // J1 抽屜 (根據 PDF 20260129 版) - 3列布局
             { name: "Myfortic", cabinet: "J", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 120 },
             { name: "Sulpin 200mg", cabinet: "J", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Akinfree", cabinet: "J", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 30 },
             { name: "ESTRADE", cabinet: "J", section: "drawer1", row: 2, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Wecoli", cabinet: "J", section: "drawer1", row: 2, col: 3, stripSize: 10, boxSize: 100 },
             { name: "Catapress", cabinet: "J", section: "drawer1", row: 3, col: 1, stripSize: 10, boxSize: 100 },
             { name: "PLAQUENIL", cabinet: "J", section: "drawer1", row: 3, col: 2, stripSize: 15, boxSize: 60 },
             { name: "Colian", cabinet: "J", section: "drawer1", row: 4, col: 1, stripSize: 10, boxSize: 100 },
@@ -1536,28 +1538,26 @@
             { name: "Doxymycin", cabinet: "J", section: "drawer2", row: 4, col: 1, stripSize: 10, boxSize: 100 },
 
             // ========== I 櫃 ==========
-            // I1 抽屜
-            { name: "Akinfree", cabinet: "I", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 30 },
-            { name: "Azilect", cabinet: "I", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 30 },
-            { name: "Doxaben 2mg", cabinet: "I", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 30 },
-            { name: "Denosin", cabinet: "I", section: "drawer1", row: 1, col: 4, stripSize: 10, boxSize: 100 },
-            { name: "Wecoli", cabinet: "I", section: "drawer1", row: 2, col: 1, stripSize: 10, boxSize: 100 },
-            { name: "Suzin", cabinet: "I", section: "drawer1", row: 2, col: 2, stripSize: 10, boxSize: 100 },
-            { name: "Sigmart", cabinet: "I", section: "drawer1", row: 2, col: 3, stripSize: 10, boxSize: 100 },
-            { name: "Baktar", cabinet: "I", section: "drawer1", row: 2, col: 4, stripSize: 10, boxSize: 20 },
-            { name: "Meptin", cabinet: "I", section: "drawer1", row: 2, col: 5, stripSize: 10, boxSize: 100 },
-            { name: "Lendormin", cabinet: "I", section: "drawer1", row: 2, col: 6, stripSize: 10, boxSize: 20 },
-            { name: "Concor 5", cabinet: "I", section: "drawer1", row: 3, col: 2, stripSize: 10, boxSize: 30 },
-            { name: "Sandel", cabinet: "I", section: "drawer1", row: 3, col: 3, stripSize: 10, boxSize: 100 },
-            { name: "Herbesser", cabinet: "I", section: "drawer1", row: 3, col: 4, stripSize: 10, boxSize: 100 },
-            { name: "Cephalexin", cabinet: "I", section: "drawer1", row: 3, col: 5, stripSize: 10, boxSize: 100 },
-            { name: "Cordarone", cabinet: "I", section: "drawer1", row: 3, col: 6, stripSize: 10, boxSize: 30 },
-            { name: "Userm", cabinet: "I", section: "drawer1", row: 3, col: 7, stripSize: 10, boxSize: 100 },
-            { name: "Ativan", cabinet: "I", section: "drawer1", row: 3, col: 8, stripSize: 10, boxSize: 100 },
-            { name: "Colchicine", cabinet: "I", section: "drawer1", row: 4, col: 2, stripSize: 10, boxSize: 100 },
-            { name: "Allegra", cabinet: "I", section: "drawer1", row: 4, col: 3, stripSize: 10, boxSize: 100 },
-            { name: "Imovane", cabinet: "I", section: "drawer1", row: 4, col: 4, stripSize: 10, boxSize: 20 },
-            { name: "Eurodin", cabinet: "I", section: "drawer1", row: 4, col: 5, stripSize: 10, boxSize: 100 },
+            // I1 抽屜 (Akinfree, Wecoli 已移至 J1)
+            { name: "Azilect", cabinet: "I", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Doxaben 2mg", cabinet: "I", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 30 },
+            { name: "Denosin", cabinet: "I", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Suzin", cabinet: "I", section: "drawer1", row: 2, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Sigmart", cabinet: "I", section: "drawer1", row: 2, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Baktar", cabinet: "I", section: "drawer1", row: 2, col: 3, stripSize: 10, boxSize: 20 },
+            { name: "Meptin", cabinet: "I", section: "drawer1", row: 2, col: 4, stripSize: 10, boxSize: 100 },
+            { name: "Lendormin", cabinet: "I", section: "drawer1", row: 2, col: 5, stripSize: 10, boxSize: 20 },
+            { name: "Concor 5", cabinet: "I", section: "drawer1", row: 3, col: 1, stripSize: 10, boxSize: 30 },
+            { name: "Sandel", cabinet: "I", section: "drawer1", row: 3, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Herbesser", cabinet: "I", section: "drawer1", row: 3, col: 3, stripSize: 10, boxSize: 100 },
+            { name: "Cephalexin", cabinet: "I", section: "drawer1", row: 3, col: 4, stripSize: 10, boxSize: 100 },
+            { name: "Cordarone", cabinet: "I", section: "drawer1", row: 3, col: 5, stripSize: 10, boxSize: 30 },
+            { name: "Userm", cabinet: "I", section: "drawer1", row: 3, col: 6, stripSize: 10, boxSize: 100 },
+            { name: "Ativan", cabinet: "I", section: "drawer1", row: 3, col: 7, stripSize: 10, boxSize: 100 },
+            { name: "Colchicine", cabinet: "I", section: "drawer1", row: 4, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Allegra", cabinet: "I", section: "drawer1", row: 4, col: 2, stripSize: 10, boxSize: 100 },
+            { name: "Imovane", cabinet: "I", section: "drawer1", row: 4, col: 3, stripSize: 10, boxSize: 20 },
+            { name: "Eurodin", cabinet: "I", section: "drawer1", row: 4, col: 4, stripSize: 10, boxSize: 100 },
             // I2 抽屜
             { name: "Avodart", cabinet: "I", section: "drawer2", row: 1, col: 1, stripSize: 10, boxSize: 30 },
             { name: "Rytmonorm", cabinet: "I", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 60 },
