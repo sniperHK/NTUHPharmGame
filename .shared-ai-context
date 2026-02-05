@@ -1,0 +1,83 @@
+# NTUHPharmGame - 上下文共享
+
+> 最後更新：2026-02-05 by Claude Opus 4.5
+
+## 基本規範
+
+- **此專案使用 Git 版本控制**
+- 所有變更應有適當的 commit
+
+## Git 歷史
+
+```
+* c5e332f 新增遊戲控制功能與 UI 修正
+* 31b58c3 新增參考文件 (20260129 版)
+* 3ac92b7 修正 I1/H1/G1 櫃位藥品分配
+* 3be07ec 修正 J1 抽屜藥品位置
+* 4dea4c8 更新下排櫃位藥品位置 (J/I/H/G/E/F)
+* 956a369 更新調劑遊戲 v20260129
+* edf8f07 新增 Netlify 部署連結至 README
+* 035d4e9 修正計數器重置邏輯：確認位置後歸零
+* b2d9866 動態更新藥品規格資訊顯示
+* d8bd0c6 修正下排櫃位2x2布局樣式問題
+* 32e9677 優化下排櫃位放大視窗布局為2x2網格
+* 8da9a80 優化放大視窗尺寸，適配一般電腦螢幕
+* f5c2303 新增多項訓練功能：櫃位放大、提示模式、閃爍定位
+* 44143c1 Add missing Reference/ directory including all drug images
+* 429aba2 Cleanup: Remove dev scripts and debug files from repo; update .gitignore
+```
+
+## 更新規則
+
+**每位 AI 助手完成工作後，必須更新此檔案：**
+- 新增/修改檔案 → 更新相關區塊
+- 任何變更 → 在「變更日誌」新增紀錄
+- 有新 commit → 更新「Git 歷史」區塊
+
+格式：`[日期] [AI名稱]: 變更摘要`
+
+---
+
+## 專案資訊
+
+### 專案說明
+台大醫院藥劑部門診配藥訓練遊戲，用於訓練藥師熟悉藥品位置和配藥流程。
+
+### 技術棧
+- 純 HTML/CSS/JavaScript 單頁應用
+- Netlify 自動部署 (從 GitHub main 分支)
+
+### 主要檔案結構
+```
+.
+├── dispensing-game.html    # 主遊戲檔案
+├── drug_map.js             # 藥品名稱到照片路徑映射
+├── Reference/
+│   └── DrugData/Images/    # 145 張藥品照片
+└── patch update 0129/      # 位置參考文件 (Word/PDF)
+```
+
+### 藥品資料結構
+```javascript
+{
+  name: "藥品名稱",
+  cabinet: "A-J 或 Desktop",
+  section: "drawer1/drawer2/doorL/doorR" (僅下排櫃),
+  row: 1-4,
+  col: 1-3,
+  stripSize: 一排數量,
+  boxSize: 一盒數量,
+  isBox: true/false (選填)
+}
+```
+
+### 待處理項目
+- Denosin 照片誤植 (目前顯示 adenocor) - 需從 NTUH 藥劑部網站取得正確照片
+- Doxaben 2mg 照片 (目前使用 4mg 照片) - 需從 NTUH 藥劑部網站取得正確照片
+- NTUH 藥劑部藥品查詢: https://www.ntuh.gov.tw/phr/Fpage.action?muid=2077&fid=1939
+
+---
+
+## 變更日誌
+
+- [2026-02-05] Claude Opus 4.5: 新增暫停/重新開始按鈕、修正放大視窗藥物點擊、位置提示自動清除、Eurodin 位置校正 (H1→G1)
