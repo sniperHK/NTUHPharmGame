@@ -71,13 +71,12 @@
 }
 ```
 
-### 待處理項目
-- Denosin 照片誤植 (目前顯示 adenocor) - 需從 NTUH 藥劑部網站取得正確照片
-- Doxaben 2mg 照片 (目前使用 4mg 照片) - 需從 NTUH 藥劑部網站取得正確照片
+### 參考資源
 - NTUH 藥劑部藥品查詢: https://www.ntuh.gov.tw/phr/Fpage.action?muid=2077&fid=1939
 
 ---
 
 ## 變更日誌
 
+- [2026-02-05] Claude Opus 4.5: 修正 Denosin 與 Doxaben 2mg 藥品照片
 - [2026-02-05] Claude Opus 4.5: 新增暫停/重新開始按鈕、修正放大視窗藥物點擊、位置提示自動清除、Eurodin 位置校正 (H1→G1)
