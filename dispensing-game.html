@@ -141,6 +141,41 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
+        .mode-divider {
+            color: #ccc;
+            margin: 0 5px;
+            font-weight: bold;
+        }
+
+        .game-ctrl-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .game-ctrl-btn.pause {
+            background: #ff9800;
+            color: white;
+        }
+
+        .game-ctrl-btn.pause.paused {
+            background: #4caf50;
+        }
+
+        .game-ctrl-btn.restart {
+            background: #9e9e9e;
+            color: white;
+        }
+
+        .game-ctrl-btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
         .prescription-compact {
             background: white;
             border-radius: 8px;
@@ -1249,6 +1284,57 @@
         #drugImageOverlay img:hover {
             transform: scale(1.02);
         }
+
+        /* 右手區藥品圖片顯示 */
+        .drug-image-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .drug-image-close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .drug-image-close:hover {
+            background: #c0392b;
+        }
+
+        .drug-image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            margin-bottom: 8px;
+        }
+
+        .drug-image-name {
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -1317,6 +1403,9 @@
                         <button class="mode-btn-sm location active" onclick="setMode('location')">🗺️ 定位</button>
                         <button class="mode-btn-sm dispensing" onclick="setMode('dispensing')">💊 配藥</button>
                         <button class="mode-btn-sm rush" onclick="setMode('rush')">⚡ 測試</button>
+                        <span class="mode-divider">|</span>
+                        <button class="game-ctrl-btn pause" id="pauseBtn" onclick="togglePause()" style="display:none;">⏸️ 暫停</button>
+                        <button class="game-ctrl-btn restart" id="restartBtn" onclick="restartGame()" style="display:none;">🔄 重來</button>
                     </div>
                     <div class="hint-controls">
                         <button class="hint-toggle" id="hintToggle" onclick="toggleHintMode()">
@@ -1576,7 +1665,7 @@
             { name: "Cephalexin", cabinet: "H", section: "drawer1", row: 3, col: 1, stripSize: 10, boxSize: 100 },
             { name: "Cordarone", cabinet: "H", section: "drawer1", row: 3, col: 2, stripSize: 10, boxSize: 30 },
             { name: "Userm", cabinet: "H", section: "drawer1", row: 3, col: 3, stripSize: 10, boxSize: 100 },
-            { name: "Eurodin", cabinet: "H", section: "drawer1", row: 4, col: 1, stripSize: 10, boxSize: 100 },
+            { name: "Eurodin", cabinet: "G", section: "drawer1", row: 4, col: 2, stripSize: 10, boxSize: 100 },
             // H2 抽屜
             { name: "Aleviatin", cabinet: "H", section: "drawer2", row: 1, col: 1, stripSize: 21, boxSize: 100 },
             { name: "Glyxambi", cabinet: "H", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 30 },
@@ -1676,6 +1765,7 @@
             isPlaying: false,
             hintMode: false, // 提示模式開關
             timerStarted: false, // 計時器是否已啟動
+            isPaused: false, // 遊戲是否暫停
         };
         let inlineHintTimeout = null;
 
@@ -1826,7 +1916,11 @@
             `;
 
             // 點擊卡片時顯示藥品圖片
-            card.onclick = () => showDrugImage(drug.name);
+            card.onclick = (e) => {
+                e.stopPropagation();
+                closeZoomModal();
+                showDrugImage(drug.name);
+            };
 
             return card;
         }
@@ -2253,6 +2347,7 @@
             document.getElementById('startScreen').classList.add('hidden');
             resetGame();
             gameState.isPlaying = true;
+            showGameControls(true);
             // 計時器改為第一次作答才開始，不在這裡啟動
             nextQuestion();
         }
@@ -2268,14 +2363,23 @@
             gameState.wrongDrugs = [];
             gameState.positionConfirmed = false;
             gameState.timerStarted = false;
+            gameState.isPaused = false;
             clearInlineHint();
             updateDisplay();
+
+            // 重置暫停按鈕狀態
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (pauseBtn) {
+                pauseBtn.textContent = '⏸️ 暫停';
+                pauseBtn.classList.remove('paused');
+            }
         }
 
         function restartGame() {
             document.getElementById('resultScreen').classList.remove('active');
             resetGame();
             gameState.isPlaying = true;
+            showGameControls(true);
             // 計時器改為第一次作答才開始，不在這裡啟動
             nextQuestion();
         }
@@ -2289,9 +2393,40 @@
             }, 1000);
         }
 
+        function togglePause() {
+            if (!gameState.isPlaying || !gameState.timerStarted) return;
+
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (gameState.isPaused) {
+                // 繼續遊戲
+                gameState.isPaused = false;
+                startTimer();
+                pauseBtn.textContent = '⏸️ 暫停';
+                pauseBtn.classList.remove('paused');
+            } else {
+                // 暫停遊戲
+                gameState.isPaused = true;
+                clearInterval(gameState.timerInterval);
+                pauseBtn.textContent = '▶️ 繼續';
+                pauseBtn.classList.add('paused');
+            }
+        }
+
+        function showGameControls(show) {
+            document.getElementById('pauseBtn').style.display = show ? 'inline-block' : 'none';
+            document.getElementById('restartBtn').style.display = show ? 'inline-block' : 'none';
+        }
+
         function endGame() {
             gameState.isPlaying = false;
+            gameState.isPaused = false;
             clearInterval(gameState.timerInterval);
+            showGameControls(false);
+
+            // 重置暫停按鈕狀態
+            const pauseBtn = document.getElementById('pauseBtn');
+            pauseBtn.textContent = '⏸️ 暫停';
+            pauseBtn.classList.remove('paused');
 
             // 禁用提示按鈕
             document.getElementById('showHintBtn').disabled = true;
@@ -2363,6 +2498,17 @@
         function nextQuestion() {
             if (!gameState.isPlaying) return;
 
+            // 清除所有位置提示高亮
+            document.querySelectorAll('.slot-blinking').forEach(el => {
+                el.classList.remove('slot-blinking');
+            });
+            document.querySelectorAll('.cabinet-hint-active').forEach(el => {
+                el.classList.remove('cabinet-hint-active');
+            });
+
+            // 清除右手區藥品圖片
+            closeDrugImageInPanel();
+
             const randomIndex = Math.floor(Math.random() * drugDatabase.length);
             gameState.currentDrug = drugDatabase[randomIndex];
 
@@ -2417,11 +2563,22 @@
         function showDrugImage(drugName) {
             // Check if drugImageMap is loaded
             if (typeof drugImageMap !== 'undefined' && drugImageMap[drugName]) {
-                const overlay = document.getElementById('drugImageOverlay');
-                const imgEl = document.getElementById('overlayImage');
-                imgEl.src = drugImageMap[drugName];
-                overlay.style.display = 'flex';
+                const rightHandContent = document.getElementById('rightHandContent');
+
+                // 清除舊內容並顯示藥品圖片
+                rightHandContent.innerHTML = `
+                    <div class="drug-image-container" id="drugImageInPanel">
+                        <button class="drug-image-close" onclick="closeDrugImageInPanel()">✕</button>
+                        <img src="${drugImageMap[drugName]}" alt="${drugName}" class="drug-image-preview">
+                        <div class="drug-image-name">${drugName}</div>
+                    </div>
+                `;
             }
+        }
+
+        function closeDrugImageInPanel() {
+            const rightHandContent = document.getElementById('rightHandContent');
+            rightHandContent.innerHTML = '';
         }
 
         function toggleDrugImage() {
