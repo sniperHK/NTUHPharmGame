@@ -2502,9 +2502,23 @@
             // 清除所有位置提示高亮
             document.querySelectorAll('.slot-blinking').forEach(el => {
                 el.classList.remove('slot-blinking');
+                el.style.animation = '';
             });
             document.querySelectorAll('.cabinet-hint-active').forEach(el => {
                 el.classList.remove('cabinet-hint-active');
+            });
+
+            // 清除所有藥物格子的高亮狀態
+            document.querySelectorAll('.drug-slot').forEach(slot => {
+                slot.classList.remove('correct', 'wrong', 'highlight', 'slot-blinking');
+                slot.style.animation = '';
+                slot.style.outline = '';
+            });
+
+            // 清除桌面藥品樣式
+            document.querySelectorAll('.draggable-drug').forEach(drug => {
+                drug.style.outline = '';
+                drug.style.animation = '';
             });
 
             // 清除右手區藥品圖片
@@ -2542,17 +2556,6 @@
 
             // Update Image
             updateDrugImage(drug.name);
-
-
-            document.querySelectorAll('.drug-slot').forEach(slot => {
-                slot.classList.remove('correct', 'wrong', 'highlight');
-            });
-
-            // 重置桌面藥品樣式
-            document.querySelectorAll('.draggable-drug').forEach(drug => {
-                drug.style.outline = '';
-                drug.style.animation = '';
-            });
 
             // 重置計數器
             resetCounters();
