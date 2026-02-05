@@ -2169,8 +2169,9 @@
         function generateDrawerSlots(cabinet, section) {
             let html = '';
             for (let c = 1; c <= 3; c++) {
+                // 只顯示第一排的藥品作為預覽
                 const drug = drugDatabase.find(d =>
-                    d.cabinet === cabinet && d.section === section && d.col === c
+                    d.cabinet === cabinet && d.section === section && d.col === c && (d.row === 1 || !d.row)
                 );
                 const name = drug ? drug.name : '';
                 const displayName = name.length > 8 ? name.substring(0, 8) + '..' : name;
