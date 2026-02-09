@@ -651,7 +651,7 @@
       </div>
       <div class="form-group">
         <label for="inputBox">一盒數量 (boxSize)</label>
-        <input type="number" id="inputBox" min="1" value="100">
+        <input type="number" id="inputBox" min="0" placeholder="留白表示未知">
         <div class="form-error" id="errorBox"></div>
       </div>
       <div class="form-group">
@@ -1177,7 +1177,7 @@ function onCellClick(cabinetKey, section, row, col) {
     document.getElementById('modalTitle').textContent = '編輯藥品';
     document.getElementById('inputName').value = drug.name;
     document.getElementById('inputStrip').value = drug.stripSize;
-    document.getElementById('inputBox').value = drug.boxSize;
+    document.getElementById('inputBox').value = drug.boxSize != null ? drug.boxSize : '';
     document.getElementById('inputIsBox').checked = !!drug.isBox;
     document.getElementById('btnRemove').style.display = '';
   } else {
@@ -1186,7 +1186,7 @@ function onCellClick(cabinetKey, section, row, col) {
     document.getElementById('modalTitle').textContent = '新增藥品';
     document.getElementById('inputName').value = '';
     document.getElementById('inputStrip').value = 10;
-    document.getElementById('inputBox').value = 100;
+    document.getElementById('inputBox').value = '';
     document.getElementById('inputIsBox').checked = false;
     document.getElementById('btnRemove').style.display = 'none';
   }
@@ -1244,8 +1244,9 @@ function saveModal() {
     valid = false;
   }
 
-  if (isNaN(boxSize) || boxSize < 1) {
-    showFormError('errorBox', '一盒數量必須 > 0');
+  // boxSize 可留白（NaN），但填了就必須 > 0
+  if (!isNaN(boxSize) && boxSize < 1) {
+    showFormError('errorBox', '一盒數量必須 > 0 或留白');
     valid = false;
   }
 
@@ -1279,7 +1280,7 @@ function saveModal() {
     const oldName = adminState.editingDrug.name;
     adminState.editingDrug.name = name;
     adminState.editingDrug.stripSize = stripSize;
-    adminState.editingDrug.boxSize = boxSize;
+    if (isNaN(boxSize)) { delete adminState.editingDrug.boxSize; } else { adminState.editingDrug.boxSize = boxSize; }
     if (isBox) {
       adminState.editingDrug.isBox = true;
     } else {
@@ -1293,9 +1294,9 @@ function saveModal() {
       cabinet: slot.cabinet,
       row: slot.row,
       col: slot.col,
-      stripSize: stripSize,
-      boxSize: boxSize
+      stripSize: stripSize
     };
+    if (!isNaN(boxSize)) newDrug.boxSize = boxSize;
     if (slot.section) newDrug.section = slot.section;
     if (isBox) newDrug.isBox = true;
     adminState.workingCopy.push(newDrug);
