@@ -1506,18 +1506,6 @@
                         parsed.data.forEach(d => drugDatabase.push(d));
                         console.log('[後台發布] 已載入 ' + parsed.data.length + ' 筆藥品資料 (' + parsed.timestamp + ')');
                     }
-                    // 套用後台設定的藥品圖片覆蓋（路徑型）
-                    if (parsed.imageOverrides && typeof parsed.imageOverrides === 'object') {
-                        Object.assign(drugImageMap, parsed.imageOverrides);
-                        console.log('[後台發布] 已套用 ' + Object.keys(parsed.imageOverrides).length + ' 筆圖片路徑覆蓋');
-                    }
-                }
-                // 套用 base64 圖片覆蓋（另存的 key）
-                const imgRaw = localStorage.getItem('drugImageOverrides');
-                if (imgRaw) {
-                    const imgOverrides = JSON.parse(imgRaw);
-                    Object.assign(drugImageMap, imgOverrides);
-                    console.log('[後台發布] 已套用 ' + Object.keys(imgOverrides).length + ' 筆上傳圖片覆蓋');
                 }
             } catch(e) { /* 忽略解析錯誤，使用預設資料 */ }
         })();
