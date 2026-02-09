@@ -10,6 +10,7 @@
 ## Git 歷史
 
 ```
+* 2805726 修正配藥計數器歸零與抽屜藥品選取邏輯
 * af9842e 加強換題時的高亮清除邏輯
 * c33be12 修正抽屜預覽只顯示第一排藥品
 * 4829869 修正抽屜藥物點擊事件冒泡問題
@@ -51,6 +52,8 @@
 ```
 .
 ├── dispensing-game.html    # 主遊戲檔案
+├── admin.html              # 藥品櫃位管理後台
+├── drug_data.js             # 共用藥品資料庫 (cabinetConfig + drugDatabase)
 ├── drug_map.js             # 藥品名稱到照片路徑映射
 ├── Reference/
 │   └── DrugData/Images/    # 145 張藥品照片
@@ -78,6 +81,7 @@
 
 ## 變更日誌
 
+- [2026-02-09] Claude Opus 4.6: 新增 admin.html 藥品櫃位管理後台 (編輯/新增/移除藥品、拖拉換位、草稿/匯出)
 - [2026-02-09] Claude Opus 4.6: 修正配藥換題計數器未歸零、抽屜藥品點擊後觸發選取邏輯
 - [2026-02-05] Claude Opus 4.5: 修正 Denosin 與 Doxaben 2mg 藥品照片
 - [2026-02-05] Claude Opus 4.5: 新增暫停/重新開始按鈕、修正放大視窗藥物點擊、位置提示自動清除、Eurodin 位置校正 (H1→G1)

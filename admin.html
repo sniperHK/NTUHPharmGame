@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>藥品櫃位管理後台</title>
+<style>
+  /* ==================== Reset & Base ==================== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Microsoft JhengHei', 'PingFang TC',
+                 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    min-height: 100vh;
+  }
+
+  /* ==================== Header ==================== */
+  .admin-header {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .admin-header h1 {
+    font-size: 1.25rem;
+    color: #5d4037;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-indicator {
+    font-size: 0.85rem;
+    color: #888;
+    padding: 4px 12px;
+    background: #f5f5f5;
+    border-radius: 20px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .status-indicator.dirty {
+    color: #e65100;
+    background: #fff3e0;
+    border-color: #ffcc80;
+  }
+
+  .btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn:hover { filter: brightness(0.92); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-draft {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+  }
+
+  .btn-export {
+    background: #2196F3;
+    color: #fff;
+  }
+
+  /* ==================== Tab Navigation ==================== */
+  .tab-bar {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    padding: 0 24px;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+  }
+
+  .tab-separator {
+    width: 1px;
+    background: #e0e0e0;
+    margin: 8px 8px;
+    align-self: stretch;
+  }
+
+  .tab-btn {
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #666;
+    white-space: nowrap;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .tab-btn:hover { color: #333; background: #f5f5f5; }
+
+  .tab-btn.active {
+    color: #2196F3;
+    border-bottom-color: #2196F3;
+    font-weight: 600;
+  }
+
+  .tab-count {
+    font-size: 0.7rem;
+    background: #e0e0e0;
+    color: #555;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  .tab-btn.active .tab-count {
+    background: #bbdefb;
+    color: #1565c0;
+  }
+
+  /* ==================== Main Content ==================== */
+  .main-content {
+    padding: 20px 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .cabinet-title {
+    font-size: 1.1rem;
+    color: #5d4037;
+    background: linear-gradient(135deg, #8d6e63, #6d4c41);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
+  }
+
+  /* ==================== Grid ==================== */
+  .grid-container {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 0 0 8px 8px;
+    padding: 16px;
+    overflow-x: auto;
+  }
+
+  .shelf-grid {
+    display: grid;
+    gap: 6px;
+  }
+
+  .row-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #999;
+    font-weight: 600;
+    min-width: 30px;
+  }
+
+  .col-labels {
+    display: contents;
+  }
+
+  .col-label {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #999;
+    font-weight: 600;
+    padding: 4px 0;
+  }
+
+  /* ==================== Drug Cell ==================== */
+  .drug-cell {
+    min-width: 110px;
+    min-height: 80px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    user-select: none;
+  }
+
+  .drug-cell.occupied {
+    background: #fff;
+    border-color: #bdbdbd;
+  }
+
+  .drug-cell.occupied:hover {
+    border-color: #2196F3;
+    box-shadow: 0 2px 8px rgba(33,150,243,0.15);
+  }
+
+  .drug-cell.empty {
+    background: #fafafa;
+    border: 2px dashed #ddd;
+    color: #ccc;
+  }
+
+  .drug-cell.empty:hover {
+    border-color: #90caf9;
+    background: #e3f2fd;
+    color: #90caf9;
+  }
+
+  .drug-cell.dragging {
+    opacity: 0.4;
+  }
+
+  .drug-cell.drag-over {
+    border: 2px dashed #2196F3 !important;
+    background: #e3f2fd !important;
+  }
+
+  .drug-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.2;
+    word-break: break-word;
+    max-width: 100%;
+  }
+
+  .drug-specs {
+    font-size: 0.65rem;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  .box-badge {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background: #ff9800;
+    color: #fff;
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .empty-icon {
+    font-size: 1.4rem;
+    color: #ddd;
+    line-height: 1;
+  }
+
+  .empty-label {
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+
+  /* ==================== Drawer Cabinet Layout ==================== */
+  .drawer-cabinet {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .drawer-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .section-header {
+    background: #efebe9;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #5d4037;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .section-grid-wrap {
+    padding: 12px;
+  }
+
+  /* ==================== Modal ==================== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+  }
+
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    width: 460px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  }
+
+  .modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-header h2 {
+    font-size: 1.05rem;
+    color: #333;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: #999;
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .modal-close:hover { color: #333; }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-body .form-group {
+    margin-bottom: 16px;
+  }
+
+  .modal-body label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+  }
+
+  .modal-body input[type="text"],
+  .modal-body input[type="number"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+  }
+
+  .modal-body input:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 0 3px rgba(33,150,243,0.1);
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .checkbox-group label {
+    margin-bottom: 0 !important;
+    cursor: pointer;
+  }
+
+  .location-display {
+    background: #f5f5f5;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #666;
+    border: 1px solid #e0e0e0;
+  }
+
+  .drug-image-preview {
+    width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid #eee;
+    background: #fafafa;
+  }
+
+  .no-image-placeholder {
+    width: 100%;
+    height: 80px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #bbb;
+    font-size: 0.85rem;
+    border: 1px dashed #ddd;
+  }
+
+  .modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-save {
+    background: #4caf50;
+    color: #fff;
+  }
+
+  .btn-cancel {
+    background: #e0e0e0;
+    color: #555;
+  }
+
+  .btn-remove {
+    background: #fff;
+    color: #e53935;
+    border: 1px solid #ef9a9a;
+  }
+
+  .btn-remove:hover {
+    background: #ffebee;
+  }
+
+  .modal-footer .right-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* ==================== Validation Error ==================== */
+  .form-error {
+    color: #e53935;
+    font-size: 0.78rem;
+    margin-top: 4px;
+    display: none;
+  }
+
+  .form-error.show {
+    display: block;
+  }
+
+  /* ==================== Toast ==================== */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #333;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    z-index: 300;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .toast.success { background: #2e7d32; }
+  .toast.error { background: #c62828; }
+  .toast.info { background: #1565c0; }
+
+  /* ==================== Responsive ==================== */
+  @media (max-width: 900px) {
+    .drawer-cabinet {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== Header ==================== -->
+<header class="admin-header">
+  <h1>藥品櫃位管理後台</h1>
+  <div class="header-actions">
+    <span id="statusIndicator" class="status-indicator">尚無變更</span>
+    <button class="btn btn-draft" onclick="saveDraft()">儲存草稿</button>
+    <button class="btn btn-export" onclick="exportDrugData()">匯出 drug_data.js</button>
+  </div>
+</header>
+
+<!-- ==================== Tabs ==================== -->
+<nav class="tab-bar" id="tabBar"></nav>
+
+<!-- ==================== Main Grid ==================== -->
+<main class="main-content">
+  <div id="cabinetTitle" class="cabinet-title"></div>
+  <div id="gridContainer" class="grid-container"></div>
+</main>
+
+<!-- ==================== Edit Modal ==================== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">編輯藥品</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>藥品照片</label>
+        <div id="imagePreviewWrap"></div>
+      </div>
+      <div class="form-group">
+        <label for="inputName">藥品名稱</label>
+        <input type="text" id="inputName" placeholder="例如 Lixiana 30mg" autocomplete="off">
+        <div class="form-error" id="errorName"></div>
+      </div>
+      <div class="form-group">
+        <label for="inputStrip">一排數量 (stripSize)</label>
+        <input type="number" id="inputStrip" min="1" value="10">
+        <div class="form-error" id="errorStrip"></div>
+      </div>
+      <div class="form-group">
+        <label for="inputBox">一盒數量 (boxSize)</label>
+        <input type="number" id="inputBox" min="1" value="100">
+        <div class="form-error" id="errorBox"></div>
+      </div>
+      <div class="form-group">
+        <div class="checkbox-group">
+          <input type="checkbox" id="inputIsBox">
+          <label for="inputIsBox">盒裝 (isBox)</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>位置</label>
+        <div class="location-display" id="locationDisplay">-</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-remove" id="btnRemove" onclick="removeDrug()">移除藥品</button>
+      <div class="right-actions">
+        <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn btn-save" onclick="saveModal()">儲存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Toast ==================== -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== External Data ==================== -->
+<script src="drug_map.js"></script>
+<script src="drug_data.js"></script>
+
+<script>
+// ==================== Admin State ====================
+const adminState = {
+  workingCopy: [],
+  activeTab: 'C',
+  isDirty: false,
+  changeCount: 0,
+  editingDrug: null,     // reference into workingCopy, or null for new
+  editingSlot: null,     // { cabinet, section?, row, col }
+  dragData: null,
+  saveTimer: null
+};
+
+// ==================== Initialisation ====================
+function init() {
+  // Deep clone drugDatabase
+  adminState.workingCopy = JSON.parse(JSON.stringify(drugDatabase));
+
+  // Check for draft in localStorage
+  checkDraft();
+
+  // Build tabs
+  buildTabs();
+
+  // Render first tab
+  switchTab('C');
+
+  // Name input change triggers image preview
+  document.getElementById('inputName').addEventListener('input', updateImagePreview);
+}
+
+// ==================== Draft Persistence ====================
+function checkDraft() {
+  try {
+    const raw = localStorage.getItem('admin_draft');
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    if (draft && draft.data && draft.timestamp) {
+      const ts = new Date(draft.timestamp).toLocaleString('zh-TW');
+      if (confirm('發現未儲存的草稿（' + ts + '），是否載入？')) {
+        adminState.workingCopy = draft.data;
+        showToast('已載入草稿', 'info');
+      }
+    }
+  } catch (e) {
+    console.warn('Draft load failed:', e);
+  }
+}
+
+function saveDraft() {
+  try {
+    const draft = {
+      data: adminState.workingCopy,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('admin_draft', JSON.stringify(draft));
+    showToast('草稿已儲存', 'success');
+  } catch (e) {
+    showToast('儲存草稿失敗', 'error');
+  }
+}
+
+function scheduleSave() {
+  if (adminState.saveTimer) clearTimeout(adminState.saveTimer);
+  adminState.saveTimer = setTimeout(saveDraft, 2000);
+}
+
+function markDirty() {
+  adminState.isDirty = true;
+  adminState.changeCount++;
+  updateStatus();
+  scheduleSave();
+}
+
+function updateStatus() {
+  const el = document.getElementById('statusIndicator');
+  if (adminState.changeCount > 0) {
+    el.textContent = adminState.changeCount + ' 項變更';
+    el.classList.add('dirty');
+  } else {
+    el.textContent = '尚無變更';
+    el.classList.remove('dirty');
+  }
+}
+
+// ==================== Tab Management ====================
+const tabOrder = ['C', 'B', 'A', 'Desktop', 'J', 'I', 'H', 'G', 'F', 'E'];
+const tabLabels = {
+  C: 'C 櫃', B: 'B 櫃', A: 'A 櫃', Desktop: '桌面',
+  J: 'J 櫃', I: 'I 櫃', H: 'H 櫃', G: 'G 櫃', F: 'F 櫃', E: 'E 櫃'
+};
+
+function buildTabs() {
+  const bar = document.getElementById('tabBar');
+  bar.innerHTML = '';
+  let prevGroup = null;
+
+  tabOrder.forEach(key => {
+    // Add separator between groups: shelf | desktop | drawer
+    const conf = cabinetConfig[key];
+    const group = conf.type;
+    if (prevGroup && prevGroup !== group) {
+      const sep = document.createElement('div');
+      sep.className = 'tab-separator';
+      bar.appendChild(sep);
+    }
+    prevGroup = group;
+
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn';
+    btn.dataset.tab = key;
+    const count = countDrugs(key);
+    btn.innerHTML = tabLabels[key] + '<span class="tab-count">' + count + '</span>';
+    btn.onclick = () => switchTab(key);
+    bar.appendChild(btn);
+  });
+}
+
+function refreshTabCounts() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    const key = btn.dataset.tab;
+    const count = countDrugs(key);
+    btn.querySelector('.tab-count').textContent = count;
+  });
+}
+
+function countDrugs(cabinetKey) {
+  return adminState.workingCopy.filter(d => d.cabinet === cabinetKey).length;
+}
+
+function switchTab(key) {
+  adminState.activeTab = key;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === key));
+  renderGrid();
+}
+
+// ==================== Grid Rendering ====================
+function renderGrid() {
+  const key = adminState.activeTab;
+  const conf = cabinetConfig[key];
+
+  document.getElementById('cabinetTitle').textContent = conf.label +
+    '  (' + countDrugs(key) + ' 筆藥品)';
+
+  const container = document.getElementById('gridContainer');
+  container.innerHTML = '';
+
+  if (conf.type === 'shelf' || conf.type === 'desktop') {
+    renderShelfGrid(container, key, conf.rows, conf.cols, null);
+  } else if (conf.type === 'drawer') {
+    renderDrawerCabinet(container, key, conf.sections);
+  }
+}
+
+function renderShelfGrid(container, cabinetKey, rows, cols, section) {
+  const grid = document.createElement('div');
+  grid.className = 'shelf-grid';
+  // grid-template: (rows+1 header) x (cols+1 row-label)
+  grid.style.gridTemplateColumns = '30px ' + 'repeat(' + cols + ', minmax(110px, 1fr))';
+
+  // Column labels row
+  const emptyCorner = document.createElement('div');
+  grid.appendChild(emptyCorner);
+  for (let c = 1; c <= cols; c++) {
+    const lbl = document.createElement('div');
+    lbl.className = 'col-label';
+    lbl.textContent = '第' + c + '列';
+    grid.appendChild(lbl);
+  }
+
+  // Data rows
+  for (let r = 1; r <= rows; r++) {
+    // Row label
+    const rl = document.createElement('div');
+    rl.className = 'row-label';
+    rl.textContent = r;
+    grid.appendChild(rl);
+
+    for (let c = 1; c <= cols; c++) {
+      const drug = findDrug(cabinetKey, section, r, c);
+      const cell = createCell(drug, cabinetKey, section, r, c);
+      grid.appendChild(cell);
+    }
+  }
+
+  container.appendChild(grid);
+}
+
+function renderDrawerCabinet(container, cabinetKey, sections) {
+  const wrap = document.createElement('div');
+  wrap.className = 'drawer-cabinet';
+
+  const sectionOrder = ['drawer1', 'drawer2', 'doorL', 'doorR'];
+  sectionOrder.forEach(sKey => {
+    if (!sections[sKey]) return;
+    const sec = sections[sKey];
+    const block = document.createElement('div');
+    block.className = 'drawer-section';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'section-header';
+    const secDrugs = adminState.workingCopy.filter(d => d.cabinet === cabinetKey && d.section === sKey);
+    hdr.textContent = sec.label + ' (' + secDrugs.length + ')';
+    block.appendChild(hdr);
+
+    const gw = document.createElement('div');
+    gw.className = 'section-grid-wrap';
+    renderShelfGrid(gw, cabinetKey, sec.rows, sec.cols, sKey);
+    block.appendChild(gw);
+
+    wrap.appendChild(block);
+  });
+
+  container.appendChild(wrap);
+}
+
+// ==================== Cell Creation ====================
+function createCell(drug, cabinetKey, section, row, col) {
+  const cell = document.createElement('div');
+  cell.className = 'drug-cell ' + (drug ? 'occupied' : 'empty');
+  cell.dataset.cabinet = cabinetKey;
+  if (section) cell.dataset.section = section;
+  cell.dataset.row = row;
+  cell.dataset.col = col;
+
+  if (drug) {
+    // Content
+    const nameEl = document.createElement('div');
+    nameEl.className = 'drug-name';
+    nameEl.textContent = drug.name;
+    cell.appendChild(nameEl);
+
+    const specEl = document.createElement('div');
+    specEl.className = 'drug-specs';
+    specEl.textContent = drug.stripSize + '/排 ' + drug.boxSize + '/盒';
+    cell.appendChild(specEl);
+
+    if (drug.isBox) {
+      const badge = document.createElement('span');
+      badge.className = 'box-badge';
+      badge.textContent = '盒';
+      cell.appendChild(badge);
+    }
+
+    // Tooltip
+    cell.title = drug.name + '\n' +
+      drug.stripSize + ' 顆/排, ' + drug.boxSize + ' 顆/盒' +
+      (drug.isBox ? ' (盒裝)' : '') + '\n' +
+      formatLocation(cabinetKey, section, row, col);
+
+    // Draggable
+    cell.draggable = true;
+    cell.addEventListener('dragstart', onDragStart);
+    cell.addEventListener('dragend', onDragEnd);
+  } else {
+    cell.innerHTML = '<div class="empty-icon">+</div><div class="empty-label">空</div>';
+  }
+
+  // Click
+  cell.addEventListener('click', () => onCellClick(cabinetKey, section, row, col));
+
+  // Drop target
+  cell.addEventListener('dragover', onDragOver);
+  cell.addEventListener('dragleave', onDragLeave);
+  cell.addEventListener('drop', onDrop);
+
+  return cell;
+}
+
+// ==================== Helpers ====================
+function findDrug(cabinetKey, section, row, col) {
+  return adminState.workingCopy.find(d =>
+    d.cabinet === cabinetKey &&
+    (section ? d.section === section : !d.section) &&
+    d.row === row && d.col === col
+  ) || null;
+}
+
+function findDrugIndex(cabinetKey, section, row, col) {
+  return adminState.workingCopy.findIndex(d =>
+    d.cabinet === cabinetKey &&
+    (section ? d.section === section : !d.section) &&
+    d.row === row && d.col === col
+  );
+}
+
+function formatLocation(cabinet, section, row, col) {
+  const conf = cabinetConfig[cabinet];
+  let loc = conf.label + ' 第' + row + '行 第' + col + '列';
+  if (section && conf.sections && conf.sections[section]) {
+    loc = conf.label + ' ' + conf.sections[section].label + ' 第' + row + '行 第' + col + '列';
+  }
+  return loc;
+}
+
+// ==================== Drag & Drop ====================
+function onDragStart(e) {
+  const cell = e.currentTarget;
+  const cab = cell.dataset.cabinet;
+  const sec = cell.dataset.section || null;
+  const row = parseInt(cell.dataset.row);
+  const col = parseInt(cell.dataset.col);
+  const drug = findDrug(cab, sec, row, col);
+  if (!drug) { e.preventDefault(); return; }
+
+  adminState.dragData = {
+    cabinet: cab, section: sec, row: row, col: col,
+    drugName: drug.name
+  };
+  e.dataTransfer.setData('text/plain', JSON.stringify(adminState.dragData));
+  e.dataTransfer.effectAllowed = 'move';
+  cell.classList.add('dragging');
+}
+
+function onDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  adminState.dragData = null;
+  // Clean up all drag-over
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+function onDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+
+function onDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function onDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+
+  let data;
+  try { data = JSON.parse(e.dataTransfer.getData('text/plain')); }
+  catch (_) { return; }
+
+  const targetCell = e.currentTarget;
+  const tCab = targetCell.dataset.cabinet;
+  const tSec = targetCell.dataset.section || null;
+  const tRow = parseInt(targetCell.dataset.row);
+  const tCol = parseInt(targetCell.dataset.col);
+
+  // Same position? do nothing
+  if (data.cabinet === tCab && data.section === tSec && data.row === tRow && data.col === tCol) return;
+
+  const srcIdx = findDrugIndex(data.cabinet, data.section, data.row, data.col);
+  const tgtIdx = findDrugIndex(tCab, tSec, tRow, tCol);
+
+  if (srcIdx === -1) return;
+
+  if (tgtIdx !== -1) {
+    // Swap
+    if (!confirm('目標位置已有藥品「' + adminState.workingCopy[tgtIdx].name + '」，確定要交換位置嗎？')) return;
+
+    // Update target drug to source position
+    adminState.workingCopy[tgtIdx].cabinet = data.cabinet;
+    adminState.workingCopy[tgtIdx].row = data.row;
+    adminState.workingCopy[tgtIdx].col = data.col;
+    if (data.section) {
+      adminState.workingCopy[tgtIdx].section = data.section;
+    } else {
+      delete adminState.workingCopy[tgtIdx].section;
+    }
+  }
+
+  // Update source drug to target position
+  adminState.workingCopy[srcIdx].cabinet = tCab;
+  adminState.workingCopy[srcIdx].row = tRow;
+  adminState.workingCopy[srcIdx].col = tCol;
+  if (tSec) {
+    adminState.workingCopy[srcIdx].section = tSec;
+  } else {
+    delete adminState.workingCopy[srcIdx].section;
+  }
+
+  markDirty();
+  renderGrid();
+  refreshTabCounts();
+  showToast('藥品位置已更新', 'success');
+}
+
+// ==================== Cell Click / Modal ====================
+function onCellClick(cabinetKey, section, row, col) {
+  const drug = findDrug(cabinetKey, section, row, col);
+
+  adminState.editingSlot = { cabinet: cabinetKey, section: section, row: row, col: col };
+
+  if (drug) {
+    // Edit existing drug
+    adminState.editingDrug = drug;
+    document.getElementById('modalTitle').textContent = '編輯藥品';
+    document.getElementById('inputName').value = drug.name;
+    document.getElementById('inputStrip').value = drug.stripSize;
+    document.getElementById('inputBox').value = drug.boxSize;
+    document.getElementById('inputIsBox').checked = !!drug.isBox;
+    document.getElementById('btnRemove').style.display = '';
+  } else {
+    // Add new drug
+    adminState.editingDrug = null;
+    document.getElementById('modalTitle').textContent = '新增藥品';
+    document.getElementById('inputName').value = '';
+    document.getElementById('inputStrip').value = 10;
+    document.getElementById('inputBox').value = 100;
+    document.getElementById('inputIsBox').checked = false;
+    document.getElementById('btnRemove').style.display = 'none';
+  }
+
+  // Location
+  document.getElementById('locationDisplay').textContent =
+    formatLocation(cabinetKey, section, row, col);
+
+  // Image
+  updateImagePreview();
+
+  // Clear errors
+  clearFormErrors();
+
+  // Show modal
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  adminState.editingDrug = null;
+  adminState.editingSlot = null;
+}
+
+function updateImagePreview() {
+  const wrap = document.getElementById('imagePreviewWrap');
+  const name = document.getElementById('inputName').value.trim();
+  const imgPath = drugImageMap[name];
+  if (imgPath) {
+    wrap.innerHTML = '<img class="drug-image-preview" src="' + escapeHtml(imgPath) + '" alt="' + escapeHtml(name) + '">';
+  } else {
+    wrap.innerHTML = '<div class="no-image-placeholder">無藥品圖片</div>';
+  }
+}
+
+// ==================== Save Modal ====================
+function saveModal() {
+  const name = document.getElementById('inputName').value.trim();
+  const stripSize = parseInt(document.getElementById('inputStrip').value);
+  const boxSize = parseInt(document.getElementById('inputBox').value);
+  const isBox = document.getElementById('inputIsBox').checked;
+  const slot = adminState.editingSlot;
+
+  // Validation
+  clearFormErrors();
+  let valid = true;
+
+  if (!name) {
+    showFormError('errorName', '藥品名稱為必填');
+    valid = false;
+  }
+
+  if (isNaN(stripSize) || stripSize < 1) {
+    showFormError('errorStrip', '一排數量必須 > 0');
+    valid = false;
+  }
+
+  if (isNaN(boxSize) || boxSize < 1) {
+    showFormError('errorBox', '一盒數量必須 > 0');
+    valid = false;
+  }
+
+  // Duplicate name check (skip self)
+  if (name) {
+    const dup = adminState.workingCopy.find(d => {
+      if (adminState.editingDrug && d === adminState.editingDrug) return false;
+      return d.name === name;
+    });
+    if (dup) {
+      showFormError('errorName', '藥品名稱重複（已存在於 ' + formatLocation(dup.cabinet, dup.section, dup.row, dup.col) + '）');
+      valid = false;
+    }
+  }
+
+  // Position conflict (for new drug or if position changed)
+  if (!adminState.editingDrug) {
+    const conflict = findDrug(slot.cabinet, slot.section, slot.row, slot.col);
+    if (conflict) {
+      showFormError('errorName', '該位置已有藥品');
+      valid = false;
+    }
+  }
+
+  if (!valid) return;
+
+  if (adminState.editingDrug) {
+    // Update existing
+    adminState.editingDrug.name = name;
+    adminState.editingDrug.stripSize = stripSize;
+    adminState.editingDrug.boxSize = boxSize;
+    if (isBox) {
+      adminState.editingDrug.isBox = true;
+    } else {
+      delete adminState.editingDrug.isBox;
+    }
+  } else {
+    // Add new
+    const newDrug = {
+      name: name,
+      cabinet: slot.cabinet,
+      row: slot.row,
+      col: slot.col,
+      stripSize: stripSize,
+      boxSize: boxSize
+    };
+    if (slot.section) newDrug.section = slot.section;
+    if (isBox) newDrug.isBox = true;
+    adminState.workingCopy.push(newDrug);
+  }
+
+  markDirty();
+  closeModal();
+  renderGrid();
+  refreshTabCounts();
+  showToast('藥品已儲存', 'success');
+}
+
+// ==================== Remove Drug ====================
+function removeDrug() {
+  if (!adminState.editingDrug) return;
+  if (!confirm('確定要移除「' + adminState.editingDrug.name + '」嗎？')) return;
+
+  const idx = adminState.workingCopy.indexOf(adminState.editingDrug);
+  if (idx !== -1) {
+    adminState.workingCopy.splice(idx, 1);
+    markDirty();
+    closeModal();
+    renderGrid();
+    refreshTabCounts();
+    showToast('藥品已移除', 'info');
+  }
+}
+
+// ==================== Form Helpers ====================
+function showFormError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function clearFormErrors() {
+  document.querySelectorAll('.form-error').forEach(el => {
+    el.classList.remove('show');
+    el.textContent = '';
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ==================== Export ====================
+function exportDrugData() {
+  const total = adminState.workingCopy.length;
+  if (!confirm('即將匯出 ' + total + ' 筆藥品資料，確定？')) return;
+
+  let output = '';
+  output += '// drug_data.js -- 共用藥品資料庫\n';
+  output += '// 由 dispensing-game.html 與 admin.html 共同引用\n';
+  output += '// Last modified: ' + new Date().toISOString().slice(0,10) + '\n\n';
+
+  // cabinetConfig
+  output += '// ==================== 櫃位結構設定 ====================\n';
+  output += 'const cabinetConfig = ' + formatCabinetConfig() + ';\n\n';
+
+  // drugDatabase grouped by cabinet
+  output += '// ==================== 藥品資料庫 ====================\n';
+  output += 'const drugDatabase = [\n';
+
+  const cabinetOrder = ['C', 'B', 'A', 'J', 'I', 'H', 'G', 'F', 'E', 'Desktop'];
+  cabinetOrder.forEach(cab => {
+    const conf = cabinetConfig[cab];
+    const drugs = adminState.workingCopy
+      .filter(d => d.cabinet === cab)
+      .sort((a, b) => {
+        // Sort by section, then row, then col
+        const sa = a.section || '';
+        const sb = b.section || '';
+        if (sa !== sb) return sa.localeCompare(sb);
+        if (a.row !== b.row) return a.row - b.row;
+        return a.col - b.col;
+      });
+
+    if (drugs.length === 0) return;
+
+    output += '  // ========== ' + conf.label + ' ==========\n';
+
+    let lastSection = null;
+    drugs.forEach(drug => {
+      // Section comment for drawer cabinets
+      if (conf.type === 'drawer' && drug.section !== lastSection) {
+        lastSection = drug.section;
+        const secConf = conf.sections[drug.section];
+        if (secConf) {
+          output += '  // ' + secConf.label + '\n';
+        }
+      }
+
+      output += '  ' + formatDrugEntry(drug) + ',\n';
+    });
+
+    output += '\n';
+  });
+
+  output += '];\n';
+
+  // Download
+  const blob = new Blob([output], { type: 'application/javascript;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'drug_data.js';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('已匯出 drug_data.js (' + total + ' 筆)', 'success');
+}
+
+function formatDrugEntry(drug) {
+  let parts = [];
+  parts.push('name: ' + JSON.stringify(drug.name));
+  parts.push('cabinet: ' + JSON.stringify(drug.cabinet));
+  if (drug.section) parts.push('section: ' + JSON.stringify(drug.section));
+  parts.push('row: ' + drug.row);
+  parts.push('col: ' + drug.col);
+  if (drug.isBox) parts.push('isBox: true');
+  parts.push('stripSize: ' + drug.stripSize);
+  parts.push('boxSize: ' + drug.boxSize);
+  return '{ ' + parts.join(', ') + ' }';
+}
+
+function formatCabinetConfig() {
+  // Produce a readable cabinetConfig string
+  let lines = [];
+  lines.push('{');
+
+  const keys = Object.keys(cabinetConfig);
+  keys.forEach((key, ki) => {
+    const conf = cabinetConfig[key];
+    const comma = ki < keys.length - 1 ? ',' : '';
+
+    if (conf.type === 'shelf' || conf.type === 'desktop') {
+      lines.push('  ' + key + ': { type: ' + JSON.stringify(conf.type) +
+        ', rows: ' + conf.rows + ', cols: ' + conf.cols +
+        ', label: ' + JSON.stringify(conf.label) + ' }' + comma);
+    } else if (conf.type === 'drawer') {
+      lines.push('  ' + key + ': { type: \'drawer\', label: ' + JSON.stringify(conf.label) + ', sections: {');
+      const sKeys = Object.keys(conf.sections);
+      sKeys.forEach((sk, si) => {
+        const sec = conf.sections[sk];
+        const sc = si < sKeys.length - 1 ? ',' : '';
+        lines.push('    ' + sk + ': { rows: ' + sec.rows + ', cols: ' + sec.cols +
+          ', label: ' + JSON.stringify(sec.label) + ' }' + sc);
+      });
+      lines.push('  }}' + comma);
+    }
+  });
+
+  lines.push('}');
+  return lines.join('\n');
+}
+
+// ==================== Toast ====================
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast ' + (type || '') + ' show';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.classList.remove('show'); }, 2500);
+}
+
+// ==================== Keyboard ====================
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ==================== Modal overlay click to close ====================
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// ==================== Boot ====================
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
