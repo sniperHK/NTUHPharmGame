@@ -673,10 +673,20 @@ function checkDraft() {
       const ts = new Date(draft.timestamp).toLocaleString('zh-TW');
       if (confirm('發現未儲存的草稿（' + ts + '），是否載入？')) {
         adminState.workingCopy = draft.data;
+        // 載入路徑型圖片覆蓋
         if (draft.imageOverrides) {
-          adminState.imageOverrides = draft.imageOverrides;
+          adminState.imageOverrides = Object.assign({}, draft.imageOverrides);
           Object.assign(drugImageMap, draft.imageOverrides);
         }
+        // 載入 base64 圖片覆蓋
+        try {
+          const imgRaw = localStorage.getItem('admin_draft_images');
+          if (imgRaw) {
+            const base64Imgs = JSON.parse(imgRaw);
+            Object.assign(adminState.imageOverrides, base64Imgs);
+            Object.assign(drugImageMap, base64Imgs);
+          }
+        } catch (e) { /* ignore */ }
         showToast('已載入草稿', 'info');
       }
     }
@@ -686,16 +696,39 @@ function checkDraft() {
 }
 
 function saveDraft() {
+  // 分離 base64 與路徑型圖片覆蓋
+  const pathOnly = {};
+  const base64Only = {};
+  for (const [name, val] of Object.entries(adminState.imageOverrides || {})) {
+    if (val && val.startsWith('data:')) {
+      base64Only[name] = val;
+    } else {
+      pathOnly[name] = val;
+    }
+  }
+
   try {
     const draft = {
       data: adminState.workingCopy,
-      imageOverrides: adminState.imageOverrides,
+      imageOverrides: pathOnly,
       timestamp: new Date().toISOString()
     };
     localStorage.setItem('admin_draft', JSON.stringify(draft));
+
+    // base64 圖片另存
+    if (Object.keys(base64Only).length > 0) {
+      try {
+        localStorage.setItem('admin_draft_images', JSON.stringify(base64Only));
+      } catch (e) {
+        showToast('草稿已儲存，但上傳的圖片過大無法快取', 'info');
+        return;
+      }
+    } else {
+      localStorage.removeItem('admin_draft_images');
+    }
     showToast('草稿已儲存', 'success');
   } catch (e) {
-    showToast('儲存草稿失敗', 'error');
+    showToast('儲存草稿失敗：' + e.message, 'error');
   }
 }
 
@@ -1248,17 +1281,53 @@ function publishToGame() {
   const total = adminState.workingCopy.length;
   if (!confirm('即將發布 ' + total + ' 筆藥品資料到遊戲。\n遊戲頁面重新整理後即生效。\n\n確定發布？')) return;
 
-  try {
-    localStorage.setItem('drugDatabasePublished', JSON.stringify({
-      data: adminState.workingCopy,
-      imageOverrides: adminState.imageOverrides || {},
-      timestamp: new Date().toISOString(),
-      count: total
-    }));
-    showToast('已發布到遊戲 (' + total + ' 筆)，重新整理遊戲頁面即生效', 'success');
-  } catch (e) {
-    showToast('發布失敗: ' + e.message, 'error');
+  // 分離 base64 圖片與路徑圖片，避免 localStorage 容量超限
+  const pathOverrides = {};
+  const base64Overrides = {};
+  const overrides = adminState.imageOverrides || {};
+  for (const [name, val] of Object.entries(overrides)) {
+    if (val && val.startsWith('data:')) {
+      base64Overrides[name] = val;
+    } else {
+      pathOverrides[name] = val;
+    }
   }
+
+  const payload = {
+    data: adminState.workingCopy,
+    imageOverrides: pathOverrides,
+    timestamp: new Date().toISOString(),
+    count: total
+  };
+
+  try {
+    localStorage.setItem('drugDatabasePublished', JSON.stringify(payload));
+  } catch (e1) {
+    // 如果還是失敗（極端情況），嘗試不含 imageOverrides
+    try {
+      payload.imageOverrides = {};
+      localStorage.setItem('drugDatabasePublished', JSON.stringify(payload));
+      showToast('發布成功（但圖片覆蓋因容量限制未包含）', 'info');
+      return;
+    } catch (e2) {
+      showToast('發布失敗：localStorage 容量不足，請先清除瀏覽器資料', 'error');
+      return;
+    }
+  }
+
+  // base64 圖片另存一個 key
+  if (Object.keys(base64Overrides).length > 0) {
+    try {
+      localStorage.setItem('drugImageOverrides', JSON.stringify(base64Overrides));
+    } catch (e) {
+      showToast('已發布藥品資料，但上傳的圖片因容量限制無法同步（建議改用圖片路徑）', 'info');
+      return;
+    }
+  } else {
+    localStorage.removeItem('drugImageOverrides');
+  }
+
+  showToast('已發布到遊戲 (' + total + ' 筆)，重新整理遊戲頁面即生效', 'success');
 }
 
 // ==================== Export ====================
