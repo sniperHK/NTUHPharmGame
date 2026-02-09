@@ -10,6 +10,8 @@
 ## Git 歷史
 
 ```
+* 4457b42 feat: 完成後台藥品照片替換功能與發布機制
+* bc50a5f refactor: 抽離 drugDatabase 至 drug_data.js，遊戲改引用外部資料
 * 9711057 feat: 新增藥品櫃位管理後台 admin.html
 * 2805726 修正配藥計數器歸零與抽屜藥品選取邏輯
 * af9842e 加強換題時的高亮清除邏輯
@@ -82,6 +84,7 @@
 
 ## 變更日誌
 
+- [2026-02-09] Claude Opus 4.6: 完成後台藥品照片替換功能（上傳/路徑設定），發布機制整合 imageOverrides
 - [2026-02-09] Claude Opus 4.6: 抽離 drugDatabase 至 drug_data.js，新增 admin.html 後台管理面板
 - [2026-02-09] Claude Opus 4.6: 修正配藥換題計數器未歸零、抽屜藥品點擊後觸發選取邏輯
 - [2026-02-05] Claude Opus 4.5: 修正 Denosin 與 Doxaben 2mg 藥品照片
