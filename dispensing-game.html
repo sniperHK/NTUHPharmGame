@@ -1915,11 +1915,21 @@
                 <div class="zoom-drug-location">${locationText}</div>
             `;
 
-            // 點擊卡片時顯示藥品圖片
+            // 點擊卡片時：遊戲中觸發選取邏輯，非遊戲時僅顯示圖片
             card.onclick = (e) => {
                 e.stopPropagation();
                 closeZoomModal();
-                showDrugImage(drug.name);
+
+                if (gameState.isPlaying && gameState.currentDrug) {
+                    // 設定 data attributes 供 selectSlot() 使用
+                    card.dataset.cabinet = cabinet;
+                    card.dataset.section = section || '';
+                    card.dataset.row = row || '';
+                    card.dataset.col = col;
+                    selectSlot(card);
+                } else {
+                    showDrugImage(drug.name);
+                }
             };
 
             return card;
@@ -2366,6 +2376,7 @@
             gameState.timerStarted = false;
             gameState.isPaused = false;
             clearInlineHint();
+            resetCounters();
             updateDisplay();
 
             // 重置暫停按鈕狀態
@@ -2738,6 +2749,9 @@
                 showInlineHint(`✓ 正確！+${points}`, 'correct');
             }
             updateDisplay();
+
+            // 立即歸零計數器，不等 nextQuestion 的 700ms 延遲
+            resetCounters();
 
             setTimeout(() => {
                 if (gameState.mode === 'rush' || gameState.questionCount < gameState.totalQuestions) {

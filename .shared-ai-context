@@ -1,6 +1,6 @@
 # NTUHPharmGame - 上下文共享
 
-> 最後更新：2026-02-05 by Claude Opus 4.5
+> 最後更新：2026-02-09 by Claude Opus 4.6
 
 ## 基本規範
 
@@ -10,6 +10,12 @@
 ## Git 歷史
 
 ```
+* af9842e 加強換題時的高亮清除邏輯
+* c33be12 修正抽屜預覽只顯示第一排藥品
+* 4829869 修正抽屜藥物點擊事件冒泡問題
+* 4229ade feat: 新增 reload.html 快取清除重新導向
+* fdb7b54 修正 Denosin 與 Doxaben 2mg 藥品照片
+* c7eb8d8 新增 .shared-ai-context 上下文共享檔案
 * c5e332f 新增遊戲控制功能與 UI 修正
 * 31b58c3 新增參考文件 (20260129 版)
 * 3ac92b7 修正 I1/H1/G1 櫃位藥品分配
@@ -19,12 +25,6 @@
 * edf8f07 新增 Netlify 部署連結至 README
 * 035d4e9 修正計數器重置邏輯：確認位置後歸零
 * b2d9866 動態更新藥品規格資訊顯示
-* d8bd0c6 修正下排櫃位2x2布局樣式問題
-* 32e9677 優化下排櫃位放大視窗布局為2x2網格
-* 8da9a80 優化放大視窗尺寸，適配一般電腦螢幕
-* f5c2303 新增多項訓練功能：櫃位放大、提示模式、閃爍定位
-* 44143c1 Add missing Reference/ directory including all drug images
-* 429aba2 Cleanup: Remove dev scripts and debug files from repo; update .gitignore
 ```
 
 ## 更新規則
@@ -78,5 +78,6 @@
 
 ## 變更日誌
 
+- [2026-02-09] Claude Opus 4.6: 修正配藥換題計數器未歸零、抽屜藥品點擊後觸發選取邏輯
 - [2026-02-05] Claude Opus 4.5: 修正 Denosin 與 Doxaben 2mg 藥品照片
 - [2026-02-05] Claude Opus 4.5: 新增暫停/重新開始按鈕、修正放大視窗藥物點擊、位置提示自動清除、Eurodin 位置校正 (H1→G1)
