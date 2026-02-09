@@ -1493,7 +1493,28 @@
 
     <script>
         // drugDatabase 與 cabinetConfig 已移至 drug_data.js
-        // { name: "Pradaxa 110mg" ... ← 資料已抽離 }
+
+        // 檢查後台發布的資料（localStorage），若有則覆蓋預設資料
+        (function() {
+            try {
+                const published = localStorage.getItem('drugDatabasePublished');
+                if (published) {
+                    const parsed = JSON.parse(published);
+                    if (parsed.data && Array.isArray(parsed.data) && parsed.data.length > 0) {
+                        // 用後台發布的資料覆蓋 drug_data.js 的預設值
+                        drugDatabase.length = 0;
+                        parsed.data.forEach(d => drugDatabase.push(d));
+                        console.log('[後台發布] 已載入 ' + parsed.data.length + ' 筆藥品資料 (' + parsed.timestamp + ')');
+                    }
+                    // 套用後台設定的藥品圖片覆蓋
+                    if (parsed.imageOverrides && typeof parsed.imageOverrides === 'object') {
+                        Object.assign(drugImageMap, parsed.imageOverrides);
+                        console.log('[後台發布] 已套用 ' + Object.keys(parsed.imageOverrides).length + ' 筆圖片覆蓋');
+                    }
+                }
+            } catch(e) { /* 忽略解析錯誤，使用預設資料 */ }
+        })();
+
         // ==================== 遊戲狀態 ====================
         let gameState = {
             mode: 'location',

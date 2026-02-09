@@ -86,6 +86,12 @@
     color: #fff;
   }
 
+  .btn-publish {
+    background: #4caf50;
+    color: #fff;
+    font-weight: 600;
+  }
+
   /* ==================== Tab Navigation ==================== */
   .tab-bar {
     background: #fff;
@@ -424,6 +430,29 @@
     background: #fafafa;
   }
 
+  .image-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .image-controls .btn {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
+
+  .image-url-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-top: 6px;
+    display: none;
+  }
+
+  .image-url-input.show { display: block; }
+
   .no-image-placeholder {
     width: 100%;
     height: 80px;
@@ -525,6 +554,7 @@
   <div class="header-actions">
     <span id="statusIndicator" class="status-indicator">尚無變更</span>
     <button class="btn btn-draft" onclick="saveDraft()">儲存草稿</button>
+    <button class="btn btn-publish" onclick="publishToGame()">發布到遊戲</button>
     <button class="btn btn-export" onclick="exportDrugData()">匯出 drug_data.js</button>
   </div>
 </header>
@@ -549,6 +579,14 @@
       <div class="form-group">
         <label>藥品照片</label>
         <div id="imagePreviewWrap"></div>
+        <div class="image-controls">
+          <label class="btn btn-draft" style="cursor:pointer;margin:0">
+            上傳圖片
+            <input type="file" accept="image/*" id="inputImageFile" style="display:none" onchange="handleImageUpload(this)">
+          </label>
+          <button class="btn btn-draft" onclick="toggleImageUrl()">設定路徑</button>
+        </div>
+        <input type="text" class="image-url-input" id="inputImageUrl" placeholder="圖片路徑，例如 Reference/DrugData/Images/xxx.jpg" onchange="setImageUrl(this.value)">
       </div>
       <div class="form-group">
         <label for="inputName">藥品名稱</label>
@@ -603,7 +641,8 @@ const adminState = {
   editingDrug: null,     // reference into workingCopy, or null for new
   editingSlot: null,     // { cabinet, section?, row, col }
   dragData: null,
-  saveTimer: null
+  saveTimer: null,
+  imageOverrides: {}
 };
 
 // ==================== Initialisation ====================
@@ -634,6 +673,10 @@ function checkDraft() {
       const ts = new Date(draft.timestamp).toLocaleString('zh-TW');
       if (confirm('發現未儲存的草稿（' + ts + '），是否載入？')) {
         adminState.workingCopy = draft.data;
+        if (draft.imageOverrides) {
+          adminState.imageOverrides = draft.imageOverrides;
+          Object.assign(drugImageMap, draft.imageOverrides);
+        }
         showToast('已載入草稿', 'info');
       }
     }
@@ -646,6 +689,7 @@ function saveDraft() {
   try {
     const draft = {
       data: adminState.workingCopy,
+      imageOverrides: adminState.imageOverrides,
       timestamp: new Date().toISOString()
     };
     localStorage.setItem('admin_draft', JSON.stringify(draft));
@@ -1150,6 +1194,71 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+// ==================== Image Management ====================
+// 追蹤圖片變更 (name → path)
+function handleImageUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const name = document.getElementById('inputName').value.trim();
+  if (!name) { showToast('請先填寫藥品名稱', 'error'); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // 存為 data URL（base64）
+    adminState.imageOverrides[name] = e.target.result;
+    drugImageMap[name] = e.target.result;
+    updateImagePreview();
+    markDirty();
+    showToast('已設定 ' + name + ' 的圖片', 'success');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function toggleImageUrl() {
+  const el = document.getElementById('inputImageUrl');
+  el.classList.toggle('show');
+  if (el.classList.contains('show')) {
+    const name = document.getElementById('inputName').value.trim();
+    el.value = drugImageMap[name] || '';
+    el.focus();
+  }
+}
+
+function setImageUrl(url) {
+  const name = document.getElementById('inputName').value.trim();
+  if (!name) { showToast('請先填寫藥品名稱', 'error'); return; }
+  url = url.trim();
+  if (url) {
+    adminState.imageOverrides[name] = url;
+    drugImageMap[name] = url;
+  } else {
+    delete adminState.imageOverrides[name];
+    // 恢復原始值需要從原始 map 重載，這裡先刪除
+    delete drugImageMap[name];
+  }
+  updateImagePreview();
+  markDirty();
+}
+
+// ==================== Publish to Game (localStorage) ====================
+function publishToGame() {
+  const total = adminState.workingCopy.length;
+  if (!confirm('即將發布 ' + total + ' 筆藥品資料到遊戲。\n遊戲頁面重新整理後即生效。\n\n確定發布？')) return;
+
+  try {
+    localStorage.setItem('drugDatabasePublished', JSON.stringify({
+      data: adminState.workingCopy,
+      imageOverrides: adminState.imageOverrides || {},
+      timestamp: new Date().toISOString(),
+      count: total
+    }));
+    showToast('已發布到遊戲 (' + total + ' 筆)，重新整理遊戲頁面即生效', 'success');
+  } catch (e) {
+    showToast('發布失敗: ' + e.message, 'error');
+  }
 }
 
 // ==================== Export ====================
