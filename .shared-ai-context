@@ -1,6 +1,6 @@
 # NTUHPharmGame - 上下文共享
 
-> 最後更新：2026-02-09 by Claude Opus 4.6
+> 最後更新：2026-02-11 by Claude Opus 4.6
 
 ## 基本規範
 
@@ -10,6 +10,10 @@
 ## Git 歷史
 
 ```
+* 9facba7 feat: 套用 Patch1 更新 A/B/C 櫃藥品位置與屬性
+* a26e322 fix: 後台 boxSize 欄位允許留白
+* 2ebac05 docs: 新增 EdTech Support 藥劑部_AG 補丁更新 0129 的筆記
+* b2bd47c 更新 .shared-ai-context
 * ff9fcaa feat: 新增變更歷程追蹤與意見回饋欄位
 * e99e5f8 simplify: 移除後台圖片替換功能，簡化發布機制
 * 0901192 fix: 修正發布功能 localStorage 容量問題
@@ -75,8 +79,10 @@
   row: 1-4,
   col: 1-3,
   stripSize: 一排數量,
-  boxSize: 一盒數量,
-  isBox: true/false (選填)
+  boxSize: 一盒數量 (選填，留白表示未知),
+  isBox: true/false (選填),
+  unit: "盒/束/包" (選填，自訂包裝單位),
+  colSpan: 2 (選填，藥品占用格數)
 }
 ```
 
@@ -87,6 +93,7 @@
 
 ## 變更日誌
 
+- [2026-02-11] Claude Opus 4.6: 套用 Patch1 更新 A/B/C 櫃藥品位置與屬性、更新 drug_map.js 圖片映射、修復後台 saveModal unit/colSpan 儲存邏輯
 - [2026-02-09] Claude Opus 4.6: 新增變更歷程追蹤面板與意見回饋欄位，匯出時附帶歷程
 - [2026-02-09] Claude Opus 4.6: 移除後台圖片替換功能（localStorage 容量限制）
 - [2026-02-09] Claude Opus 4.6: 抽離 drugDatabase 至 drug_data.js，新增 admin.html 後台管理面板
