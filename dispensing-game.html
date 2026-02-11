@@ -215,6 +215,12 @@
             border: 1px solid rgba(244, 67, 54, 0.45);
         }
 
+        .inline-hint.hint {
+            color: #1565c0;
+            background: rgba(33, 150, 243, 0.12);
+            border: 1px solid rgba(33, 150, 243, 0.45);
+        }
+
         /* 桌面區常備藥（Biocal / Coxine / Sennapur / Loditon） */
         .desktop-drug-pool {
             margin-top: 6px;
@@ -391,6 +397,13 @@
         .submit-btn-sm:hover {
             background: #219a52;
             transform: scale(1.05);
+        }
+
+        .running-total {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #e67e22;
+            white-space: nowrap;
         }
 
         .section-label {
@@ -1093,29 +1106,6 @@
             flex-wrap: wrap;
         }
 
-        .hint-toggle {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .hint-toggle:hover {
-            transform: scale(1.05);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .hint-toggle.active {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-        }
-
         .show-hint-btn {
             background: #3498db;
             color: white;
@@ -1396,14 +1386,12 @@
                         <button class="mode-btn-sm dispensing" onclick="setMode('dispensing')">💊 配藥</button>
                         <button class="mode-btn-sm rush" onclick="setMode('rush')">⚡ 測試</button>
                         <span class="mode-divider">|</span>
-                        <button class="game-ctrl-btn pause" id="pauseBtn" onclick="togglePause()" style="display:none;">⏸️ 暫停</button>
-                        <button class="game-ctrl-btn restart" id="restartBtn" onclick="restartGame()" style="display:none;">🔄 重來</button>
+                        <button class="game-ctrl-btn pause" id="pauseBtn" onclick="togglePause()"
+                            style="display:none;">⏸️ 暫停</button>
+                        <button class="game-ctrl-btn restart" id="restartBtn" onclick="restartGame()"
+                            style="display:none;">🔄 重來</button>
                     </div>
                     <div class="hint-controls">
-                        <button class="hint-toggle" id="hintToggle" onclick="toggleHintMode()">
-                            <span id="hintToggleIcon">💡</span>
-                            <span id="hintToggleText">提示模式：關閉</span>
-                        </button>
                         <button class="show-hint-btn" id="showHintBtn" onclick="showLocationHint()" disabled>
                             🎯 顯示位置提示
                         </button>
@@ -1438,6 +1426,7 @@
                                     <span class="counter-label">顆</span>
                                 </div>
                             </div>
+                            <span class="running-total" id="runningTotal"></span>
                             <button class="submit-btn-sm" onclick="submitDispensing()">✓</button>
                         </div>
                         <div class="inline-hint" id="inlineHint" aria-live="polite"></div>
@@ -1487,7 +1476,7 @@
         // drugDatabase 與 cabinetConfig 已移至 drug_data.js
 
         // 檢查後台發布的資料（localStorage），若有則覆蓋預設資料
-        (function() {
+        (function () {
             try {
                 const published = localStorage.getItem('drugDatabasePublished');
                 if (published) {
@@ -1499,7 +1488,7 @@
                         console.log('[後台發布] 已載入 ' + parsed.data.length + ' 筆藥品資料 (' + parsed.timestamp + ')');
                     }
                 }
-            } catch(e) { /* 忽略解析錯誤，使用預設資料 */ }
+            } catch (e) { /* 忽略解析錯誤，使用預設資料 */ }
         })();
 
         // ==================== 遊戲狀態 ====================
@@ -1519,7 +1508,6 @@
             wrongDrugs: [],
             timerInterval: null,
             isPlaying: false,
-            hintMode: false, // 提示模式開關
             timerStarted: false, // 計時器是否已啟動
             isPaused: false, // 遊戲是否暫停
         };
@@ -1634,9 +1622,23 @@
             grid.innerHTML = '';
 
             for (let r = 1; r <= maxRow; r++) {
+                const covered = new Set();
+                // 先找 colSpan 覆蓋的格子
                 for (let c = 1; c <= maxCol; c++) {
+                    const d = drugDatabase.find(d => d.cabinet === cabinet && d.section === section && (d.row || 1) === r && d.col === c);
+                    if (d && d.colSpan > 1) {
+                        for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
+                    }
+                }
+
+                for (let c = 1; c <= maxCol; c++) {
+                    if (covered.has(c)) continue;
                     const drug = drugDatabase.find(d => d.cabinet === cabinet && d.section === section && (d.row || 1) === r && d.col === c);
-                    grid.appendChild(createZoomDrugCard(drug, cabinet, r, c, section));
+                    const card = createZoomDrugCard(drug, cabinet, r, c, section);
+                    if (drug && drug.colSpan > 1) {
+                        card.style.gridColumn = `span ${drug.colSpan}`;
+                    }
+                    grid.appendChild(card);
                 }
             }
 
@@ -1710,151 +1712,75 @@
             });
         });
 
-        // ==================== 提示模式功能 ====================
-        function toggleHintMode() {
-            gameState.hintMode = !gameState.hintMode;
-            const toggle = document.getElementById('hintToggle');
-            const icon = document.getElementById('hintToggleIcon');
-            const text = document.getElementById('hintToggleText');
-
-            if (gameState.hintMode) {
-                toggle.classList.add('active');
-                icon.textContent = '✨';
-                text.textContent = '提示模式：開啟';
-            } else {
-                toggle.classList.remove('active');
-                icon.textContent = '💡';
-                text.textContent = '提示模式：關閉';
-            }
-
-            // 如果遊戲正在進行，更新提示顯示
-            if (gameState.isPlaying && gameState.currentDrug) {
-                updateHintDisplay();
-            }
-        }
-
-        function updateHintDisplay() {
-            const hintElement = document.getElementById('drugHintLocation');
-            if (!hintElement) return;
-
-            if (gameState.hintMode && gameState.currentDrug) {
-                const drug = gameState.currentDrug;
-                let hintText = `📍 位於 ${drug.cabinet} 櫃`;
-
-                // Logic to highlight the broad area (Continuous Hint)
-                // First remove old highlights
-                document.querySelectorAll('.cabinet-hint-active').forEach(el => el.classList.remove('cabinet-hint-active'));
-
-                let targetElementId = null;
-                let targetSubSelector = null;
-
-                if (['C', 'B', 'A'].includes(drug.cabinet)) {
-                    targetElementId = `cabinet${drug.cabinet}`;
-                    // For shelf cabinets, highlight the whole cabinet
-                    const el = document.getElementById(targetElementId);
-                    if (el) el.classList.add('cabinet-hint-active');
-                } else {
-                    // For drawer cabinets
-                    targetElementId = `cabinet${drug.cabinet}`;
-                    const cabEl = document.getElementById(targetElementId);
-
-                    if (drug.section && cabEl) {
-                        // Find the specific section (drawer/door) inside
-                        if (drug.section === 'drawer1') {
-                            const el = cabEl.querySelector('.drawer-section:nth-of-type(1)');
-                            if (el) el.classList.add('cabinet-hint-active');
-                        } else if (drug.section === 'drawer2') {
-                            const el = cabEl.querySelector('.drawer-section:nth-of-type(2)');
-                            if (el) el.classList.add('cabinet-hint-active');
-                        } else if (drug.section === 'doorL') {
-                            const el = cabEl.querySelector('.door:nth-of-type(1)');
-                            if (el) el.classList.add('cabinet-hint-active');
-                        } else if (drug.section === 'doorR') {
-                            const el = cabEl.querySelector('.door:nth-of-type(2)');
-                            if (el) el.classList.add('cabinet-hint-active');
-                        }
-                    }
-                }
-
-                if (drug.section) {
-                    const sectionNames = {
-                        'drawer1': '抽屜 1',
-                        'drawer2': '抽屜 2',
-                        'doorL': '左門',
-                        'doorR': '右門'
-                    };
-                    hintText += ` - ${sectionNames[drug.section]}`;
-                } else if (drug.row) {
-                    hintText += ` - 第 ${drug.row} 行`;
-                }
-
-                hintElement.textContent = hintText;
-                hintElement.style.display = 'inline';
-            } else {
-                hintElement.textContent = '';
-                hintElement.style.display = 'none';
-
-                // Remove highlights
-                document.querySelectorAll('.cabinet-hint-active').forEach(el => el.classList.remove('cabinet-hint-active'));
-            }
-        }
-
+        // ==================== 位置提示功能 ====================
         function showLocationHint() {
             if (!gameState.currentDrug || !gameState.isPlaying) return;
 
             const drug = gameState.currentDrug;
 
-            // 找到正確的藥品格子
+            // 移除之前的高亮
+            document.querySelectorAll('.slot-blinking').forEach(el => el.classList.remove('slot-blinking'));
+            document.querySelectorAll('.cabinet-hint-active').forEach(el => el.classList.remove('cabinet-hint-active'));
+
+            // 高亮整個櫃位/抽屜區域
+            if (drug.cabinet !== 'Desktop') {
+                const cabEl = document.getElementById(`cabinet${drug.cabinet}`);
+                if (cabEl) {
+                    if (['C', 'B', 'A'].includes(drug.cabinet)) {
+                        cabEl.classList.add('cabinet-hint-active');
+                    } else if (drug.section) {
+                        const sectionSelectors = {
+                            'drawer1': '.drawer-section:nth-of-type(1)',
+                            'drawer2': '.drawer-section:nth-of-type(2)',
+                            'doorL': '.door:nth-of-type(1)',
+                            'doorR': '.door:nth-of-type(2)'
+                        };
+                        const secEl = cabEl.querySelector(sectionSelectors[drug.section]);
+                        if (secEl) secEl.classList.add('cabinet-hint-active');
+                    }
+                }
+            }
+
+            // 找到正確的藥品格子並閃爍
             let targetSlot = null;
 
             if (drug.cabinet === 'Desktop') {
-                // 桌面區藥品
                 const desktopItems = document.querySelectorAll('#desktopDrugPoolItems .desktop-drug-item');
                 desktopItems.forEach(item => {
-                    if (item.textContent.trim() === drug.name) {
-                        targetSlot = item;
-                    }
+                    if (item.textContent.trim() === drug.name) targetSlot = item;
                 });
             } else {
-                // 櫃位藥品
                 const allSlots = document.querySelectorAll('.drug-slot');
                 allSlots.forEach(slot => {
-                    const slotCabinet = slot.dataset.cabinet;
-                    const slotRow = parseInt(slot.dataset.row);
-                    const slotCol = parseInt(slot.dataset.col);
-                    const slotSection = slot.dataset.section;
-
-                    let isMatch = slotCabinet === drug.cabinet;
-
+                    let isMatch = slot.dataset.cabinet === drug.cabinet;
                     if (drug.section) {
-                        isMatch = isMatch && slotSection === drug.section && slotCol === drug.col;
+                        isMatch = isMatch && slot.dataset.section === drug.section && parseInt(slot.dataset.col) === drug.col;
                     } else {
-                        isMatch = isMatch && slotRow === drug.row && slotCol === drug.col && !slotSection;
+                        isMatch = isMatch && parseInt(slot.dataset.row) === drug.row && parseInt(slot.dataset.col) === drug.col && !slot.dataset.section;
                     }
-
-                    if (isMatch) {
-                        targetSlot = slot;
-                    }
+                    if (isMatch) targetSlot = slot;
                 });
             }
 
             if (targetSlot) {
-                // 移除之前的閃爍效果
-                document.querySelectorAll('.slot-blinking').forEach(el => {
-                    el.classList.remove('slot-blinking');
-                });
-
-                // 添加閃爍效果
                 targetSlot.classList.add('slot-blinking');
-
-                // 捲動到該元素
                 targetSlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                // 3秒後移除閃爍效果
                 setTimeout(() => {
                     targetSlot.classList.remove('slot-blinking');
+                    document.querySelectorAll('.cabinet-hint-active').forEach(el => el.classList.remove('cabinet-hint-active'));
                 }, 3000);
             }
+
+            // 顯示位置文字提示
+            let hintText = `📍 ${drug.cabinet} 櫃`;
+            if (drug.section) {
+                const sectionNames = { 'drawer1': '抽屜 1', 'drawer2': '抽屜 2', 'doorL': '左門', 'doorR': '右門' };
+                hintText += ` - ${sectionNames[drug.section]}`;
+            } else if (drug.row) {
+                hintText += ` - 第 ${drug.row} 行`;
+            }
+            showInlineHint(hintText, 'hint');
         }
 
         function generateCabinets() {
@@ -1958,8 +1884,19 @@
         function generateDrawerSlots(cabinet, section) {
             let html = '';
             const cols = cabinetConfig[cabinet].sections[section].cols;
+            const covered = new Set();
+            // 預覽只顯示第一排，先計算覆蓋
             for (let c = 1; c <= cols; c++) {
-                // 只顯示第一排的藥品作為預覽
+                const d = drugDatabase.find(d =>
+                    d.cabinet === cabinet && d.section === section && d.col === c && (d.row === 1 || !d.row)
+                );
+                if (d && d.colSpan > 1) {
+                    for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
+                }
+            }
+
+            for (let c = 1; c <= cols; c++) {
+                if (covered.has(c)) continue;
                 const drug = drugDatabase.find(d =>
                     d.cabinet === cabinet && d.section === section && d.col === c && (d.row === 1 || !d.row)
                 );
@@ -1967,9 +1904,10 @@
                 const displayName = name.length > 8 ? name.substring(0, 8) + '..' : name;
                 const unitLabel = drug ? getDrugUnitLabel(drug) : '';
                 const unitAttr = unitLabel ? ` data-unit="${unitLabel}"` : '';
+                const spanStyle = drug?.colSpan > 1 ? ` style="grid-column: span ${drug.colSpan}"` : '';
                 const draggable = name ? 'true' : 'false';
                 html += `<div class="drug-slot"
-                    draggable="${draggable}"
+                    draggable="${draggable}"${spanStyle}
                     data-cabinet="${cabinet}"
                     data-section="${section}"
                     data-col="${c}"
@@ -1983,7 +1921,17 @@
         function generateDoorSlots(cabinet, section) {
             let html = '';
             const cols = cabinetConfig[cabinet].sections[section].cols;
+            const covered = new Set();
+
             for (let c = 1; c <= cols; c++) {
+                const d = drugDatabase.find(d => d.cabinet === cabinet && d.section === section && d.col === c);
+                if (d && d.colSpan > 1) {
+                    for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
+                }
+            }
+
+            for (let c = 1; c <= cols; c++) {
+                if (covered.has(c)) continue;
                 const drug = drugDatabase.find(d =>
                     d.cabinet === cabinet && d.section === section && d.col === c
                 );
@@ -1991,9 +1939,10 @@
                 const displayName = name.length > 7 ? name.substring(0, 7) + '..' : name;
                 const unitLabel = drug ? getDrugUnitLabel(drug) : '';
                 const unitAttr = unitLabel ? ` data-unit="${unitLabel}"` : '';
+                const spanStyle = drug?.colSpan > 1 ? ` style="grid-column: span ${drug.colSpan}"` : '';
                 const draggable = name ? 'true' : 'false';
                 html += `<div class="drug-slot"
-                    draggable="${draggable}"
+                    draggable="${draggable}"${spanStyle}
                     data-cabinet="${cabinet}"
                     data-section="${section}"
                     data-col="${c}"
@@ -2281,12 +2230,24 @@
             let val = parseInt(el.textContent) || 0;
             val = Math.max(0, val + delta);
             el.textContent = val;
+            updateRunningTotal();
+        }
+
+        function updateRunningTotal() {
+            const drug = gameState.currentDrug;
+            if (!drug) return;
+            const box = parseInt(document.getElementById('boxCount').textContent) || 0;
+            const strip = parseInt(document.getElementById('stripCount').textContent) || 0;
+            const loose = parseInt(document.getElementById('looseCount').textContent) || 0;
+            const total = (box * (drug.boxSize || 0)) + (strip * drug.stripSize) + loose;
+            document.getElementById('runningTotal').textContent = total > 0 ? `= ${total} 顆` : '';
         }
 
         function resetCounters() {
             document.getElementById('boxCount').textContent = '0';
             document.getElementById('stripCount').textContent = '0';
             document.getElementById('looseCount').textContent = '0';
+            document.getElementById('runningTotal').textContent = '';
         }
 
         // ==================== 題目邏輯 ====================
@@ -2335,9 +2296,6 @@
             if (gameState.mode === 'location') {
                 // 定位模式
                 document.getElementById('drugNameLocation').textContent = drug.name;
-
-                // 根據提示模式決定是否顯示位置提示
-                updateHintDisplay();
 
                 // 啟用「顯示位置提示」按鈕
                 document.getElementById('showHintBtn').disabled = false;
@@ -2602,11 +2560,12 @@
             hint.className = `inline-hint show ${type}`;
             hint.style.display = 'block';
             if (inlineHintTimeout) clearTimeout(inlineHintTimeout);
+            const duration = type === 'hint' ? 3000 : 900;
             inlineHintTimeout = setTimeout(() => {
                 hint.style.display = 'none';
                 hint.className = 'inline-hint';
                 hint.textContent = '';
-            }, 900);
+            }, duration);
         }
 
         init();
