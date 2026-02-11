@@ -442,7 +442,7 @@
 
         .shelf-grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            /* grid-template-columns 由 JS 動態設定 (cabinetConfig) */
             gap: 3px;
         }
 
@@ -530,7 +530,7 @@
 
         .drawer-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            /* grid-template-columns 由 JS 動態設定 (cabinetConfig) */
             gap: 4px;
             background: #5d4037;
             padding: 5px;
@@ -616,8 +616,8 @@
             animation: glow 1s infinite;
         }
 
-        .drug-slot.box::after {
-            content: '盒';
+        .drug-slot[data-unit]::after {
+            content: attr(data-unit);
             font-size: 0.45rem;
             color: #e65100;
             position: absolute;
@@ -991,14 +991,6 @@
             display: grid;
             gap: 10px;
             margin-top: 12px;
-        }
-
-        .zoom-grid.shelf-layout {
-            grid-template-columns: repeat(6, 1fr);
-        }
-
-        .zoom-grid.drawer-layout {
-            grid-template-columns: repeat(3, 1fr);
         }
 
         .zoom-grid.door-layout {
@@ -1547,17 +1539,31 @@
             title.textContent = `${cabinet} 櫃詳細檢視`;
 
             if (type === 'shelf') {
-                // 上排架子放大
-                const rows = cabinet === 'A' ? 6 : 5;
+                // 上排架子放大 — 從 cabinetConfig 讀取行列數
+                const config = cabinetConfig[cabinet];
+                const rows = config.rows;
+                const cols = config.cols;
                 grid.className = 'zoom-grid shelf-layout';
+                grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
                 grid.innerHTML = '';
 
                 for (let r = 1; r <= rows; r++) {
-                    for (let c = 1; c <= 6; c++) {
+                    const covered = new Set();
+                    // 先找 colSpan 覆蓋的格子
+                    for (let c = 1; c <= cols; c++) {
+                        const d = drugDatabase.find(d => d.cabinet === cabinet && d.row === r && d.col === c && !d.section);
+                        if (d && d.colSpan > 1) {
+                            for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
+                        }
+                    }
+                    for (let c = 1; c <= cols; c++) {
+                        if (covered.has(c)) continue;
                         const drug = drugDatabase.find(d =>
                             d.cabinet === cabinet && d.row === r && d.col === c && !d.section
                         );
-                        grid.appendChild(createZoomDrugCard(drug, cabinet, r, c));
+                        const card = createZoomDrugCard(drug, cabinet, r, c);
+                        if (drug && drug.colSpan > 1) card.style.gridColumn = `span ${drug.colSpan}`;
+                        grid.appendChild(card);
                     }
                 }
             } else {
@@ -1570,20 +1576,15 @@
 
                 // 輔助函數：取得指定區域的所有藥品並以網格顯示
                 function getDrawerGridHTML(cab, section, title) {
-                    const drugs = drugDatabase.filter(d => d.cabinet === cab && d.section === section);
-                    if (drugs.length === 0) {
-                        return `<div><h3 class="zoom-section-title">${title}</h3><div class="zoom-grid drawer-layout"><div class="zoom-drug-card empty"><div class="zoom-drug-name">空</div></div></div></div>`;
-                    }
+                    const sectionConfig = cabinetConfig[cab].sections[section];
+                    const maxRow = sectionConfig.rows;
+                    const maxCol = sectionConfig.cols;
 
-                    // 找出最大行列數
-                    const maxRow = Math.max(...drugs.map(d => d.row || 1));
-                    const maxCol = Math.max(...drugs.map(d => d.col || 1));
-
-                    let html = `<div><h3 class="zoom-section-title">${title}</h3><div class="zoom-grid" style="grid-template-columns: repeat(${Math.min(maxCol, 4)}, 1fr);">`;
+                    let html = `<div><h3 class="zoom-section-title">${title}</h3><div class="zoom-grid" style="grid-template-columns: repeat(${maxCol}, 1fr);">`;
 
                     for (let r = 1; r <= maxRow; r++) {
-                        for (let c = 1; c <= Math.min(maxCol, 4); c++) {
-                            const drug = drugs.find(d => (d.row || 1) === r && d.col === c);
+                        for (let c = 1; c <= maxCol; c++) {
+                            const drug = drugDatabase.find(d => d.cabinet === cab && d.section === section && (d.row || 1) === r && d.col === c);
                             html += createZoomDrugCard(drug, cab, r, c, section).outerHTML;
                         }
                     }
@@ -1623,27 +1624,18 @@
 
             title.textContent = `${cabinet} 櫃 - ${sectionNames[section]}詳細檢視`;
 
-            // 動態取得該區域的所有藥品
-            const drugs = drugDatabase.filter(d => d.cabinet === cabinet && d.section === section);
-
-            if (drugs.length === 0) {
-                grid.className = 'zoom-grid drawer-layout';
-                grid.innerHTML = '<div class="zoom-drug-card empty"><div class="zoom-drug-name">空</div></div>';
-                modal.classList.add('active');
-                return;
-            }
-
-            // 找出最大行列數
-            const maxRow = Math.max(...drugs.map(d => d.row || 1));
-            const maxCol = Math.max(...drugs.map(d => d.col || 1));
+            // 從 cabinetConfig 讀取該區域的行列數
+            const sectionConfig = cabinetConfig[cabinet].sections[section];
+            const maxRow = sectionConfig.rows;
+            const maxCol = sectionConfig.cols;
 
             grid.className = 'zoom-grid';
-            grid.style.gridTemplateColumns = `repeat(${Math.min(maxCol, 4)}, 1fr)`;
+            grid.style.gridTemplateColumns = `repeat(${maxCol}, 1fr)`;
             grid.innerHTML = '';
 
             for (let r = 1; r <= maxRow; r++) {
-                for (let c = 1; c <= Math.min(maxCol, 4); c++) {
-                    const drug = drugs.find(d => (d.row || 1) === r && d.col === c);
+                for (let c = 1; c <= maxCol; c++) {
+                    const drug = drugDatabase.find(d => d.cabinet === cabinet && d.section === section && (d.row || 1) === r && d.col === c);
                     grid.appendChild(createZoomDrugCard(drug, cabinet, r, c, section));
                 }
             }
@@ -1669,12 +1661,16 @@
                 locationText = `位置：第 ${col} 格`;
             }
 
+            const unitLabel = getDrugUnitLabel(drug);
+            const packType = unitLabel ? `${unitLabel}裝` : '散裝';
+            const boxInfo = drug.boxSize ? `一${unitLabel || '盒'}：${drug.boxSize} 顆` : '';
+
             card.innerHTML = `
                 <div class="zoom-drug-name">${drug.name}</div>
                 <div class="zoom-drug-info">
-                    ${drug.isBox ? '盒裝' : '散裝'}<br>
+                    ${packType}<br>
                     一排：${drug.stripSize} 顆<br>
-                    一盒：${drug.boxSize} 顆
+                    ${boxInfo}
                 </div>
                 <div class="zoom-drug-location">${locationText}</div>
             `;
@@ -1862,13 +1858,15 @@
         }
 
         function generateCabinets() {
-            // 上排架子：C, B (5層), A (6層)
+            // 上排架子：C, B, A — 從 cabinetConfig 讀取行列數
             ['C', 'B', 'A'].forEach(cab => {
                 const el = document.getElementById(`cabinet${cab}`);
-                const rows = cab === 'A' ? 6 : 5; // A櫃有6層，C和B櫃有5層
+                const config = cabinetConfig[cab];
+                const rows = config.rows;
+                const cols = config.cols;
                 el.innerHTML = `
                     <div class="cab-label">${cab} 櫃 (點擊放大)</div>
-                    <div class="shelf-grid">${generateShelfSlots(cab, rows, 6)}</div>
+                    <div class="shelf-grid" style="grid-template-columns: repeat(${cols}, 1fr)">${generateShelfSlots(cab, rows, cols)}</div>
                 `;
                 // Make entire cabinet clickable
                 el.onclick = function (e) {
@@ -1886,11 +1884,11 @@
                     <div class="cab-label">${cab} 櫃</div>
                     <div class="drawer-section" onclick="openDrawerZoom('${cab}', 'drawer1'); event.stopPropagation();">
                         <div class="drawer-label">抽屜 1</div>
-                        <div class="drawer-grid pointer-events-none">${generateDrawerSlots(cab, 'drawer1')}</div>
+                        <div class="drawer-grid pointer-events-none" style="grid-template-columns: repeat(${cabinetConfig[cab].sections.drawer1.cols}, 1fr)">${generateDrawerSlots(cab, 'drawer1')}</div>
                     </div>
                     <div class="drawer-section" onclick="openDrawerZoom('${cab}', 'drawer2'); event.stopPropagation();">
                         <div class="drawer-label">抽屜 2</div>
-                        <div class="drawer-grid pointer-events-none">${generateDrawerSlots(cab, 'drawer2')}</div>
+                        <div class="drawer-grid pointer-events-none" style="grid-template-columns: repeat(${cabinetConfig[cab].sections.drawer2.cols}, 1fr)">${generateDrawerSlots(cab, 'drawer2')}</div>
                     </div>
                     <div class="door-section">
                         <div class="door" onclick="openDrawerZoom('${cab}', 'doorL'); event.stopPropagation();">
@@ -1916,23 +1914,40 @@
             initDragAndDrop();
         }
 
+        function getDrugUnitLabel(drug) {
+            if (drug.unit) return drug.unit;
+            if (drug.isBox) return '盒';
+            return '';
+        }
+
         function generateShelfSlots(cabinet, rows, cols) {
             let html = '';
             for (let r = 1; r <= rows; r++) {
+                const covered = new Set();
+                // 先找 colSpan 覆蓋的格子
                 for (let c = 1; c <= cols; c++) {
+                    const d = drugDatabase.find(d => d.cabinet === cabinet && d.row === r && d.col === c && !d.section);
+                    if (d && d.colSpan > 1) {
+                        for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
+                    }
+                }
+                for (let c = 1; c <= cols; c++) {
+                    if (covered.has(c)) continue;
                     const drug = drugDatabase.find(d =>
                         d.cabinet === cabinet && d.row === r && d.col === c && !d.section
                     );
                     const name = drug ? drug.name : '';
                     const displayName = name.length > 10 ? name.substring(0, 10) + '..' : name;
-                    const boxClass = drug?.isBox ? 'box' : '';
+                    const unitLabel = drug ? getDrugUnitLabel(drug) : '';
+                    const unitAttr = unitLabel ? ` data-unit="${unitLabel}"` : '';
+                    const spanStyle = drug?.colSpan > 1 ? ` style="grid-column: span ${drug.colSpan}"` : '';
                     const draggable = name ? 'true' : 'false';
-                    html += `<div class="drug-slot ${boxClass}"
-                        draggable="${draggable}"
+                    html += `<div class="drug-slot"
+                        draggable="${draggable}"${spanStyle}
                         data-cabinet="${cabinet}"
                         data-row="${r}"
                         data-col="${c}"
-                        data-drug-name="${name}"
+                        data-drug-name="${name}"${unitAttr}
                         onclick="selectSlot(this); event.stopPropagation();"
                         title="${name}">${displayName}</div>`;
                 }
@@ -1942,21 +1957,23 @@
 
         function generateDrawerSlots(cabinet, section) {
             let html = '';
-            for (let c = 1; c <= 3; c++) {
+            const cols = cabinetConfig[cabinet].sections[section].cols;
+            for (let c = 1; c <= cols; c++) {
                 // 只顯示第一排的藥品作為預覽
                 const drug = drugDatabase.find(d =>
                     d.cabinet === cabinet && d.section === section && d.col === c && (d.row === 1 || !d.row)
                 );
                 const name = drug ? drug.name : '';
                 const displayName = name.length > 8 ? name.substring(0, 8) + '..' : name;
-                const boxClass = drug?.isBox ? 'box' : '';
+                const unitLabel = drug ? getDrugUnitLabel(drug) : '';
+                const unitAttr = unitLabel ? ` data-unit="${unitLabel}"` : '';
                 const draggable = name ? 'true' : 'false';
-                html += `<div class="drug-slot ${boxClass}"
+                html += `<div class="drug-slot"
                     draggable="${draggable}"
                     data-cabinet="${cabinet}"
                     data-section="${section}"
                     data-col="${c}"
-                    data-drug-name="${name}"
+                    data-drug-name="${name}"${unitAttr}
                     onclick="selectSlot(this); event.stopPropagation();"
                     title="${name}">${displayName}</div>`;
             }
@@ -1965,20 +1982,22 @@
 
         function generateDoorSlots(cabinet, section) {
             let html = '';
-            for (let c = 1; c <= 2; c++) {
+            const cols = cabinetConfig[cabinet].sections[section].cols;
+            for (let c = 1; c <= cols; c++) {
                 const drug = drugDatabase.find(d =>
                     d.cabinet === cabinet && d.section === section && d.col === c
                 );
                 const name = drug ? drug.name : '';
                 const displayName = name.length > 7 ? name.substring(0, 7) + '..' : name;
-                const boxClass = drug?.isBox ? 'box' : '';
+                const unitLabel = drug ? getDrugUnitLabel(drug) : '';
+                const unitAttr = unitLabel ? ` data-unit="${unitLabel}"` : '';
                 const draggable = name ? 'true' : 'false';
-                html += `<div class="drug-slot ${boxClass}"
+                html += `<div class="drug-slot"
                     draggable="${draggable}"
                     data-cabinet="${cabinet}"
                     data-section="${section}"
                     data-col="${c}"
-                    data-drug-name="${name}"
+                    data-drug-name="${name}"${unitAttr}
                     onclick="selectSlot(this); event.stopPropagation();"
                     title="${name}">${displayName}</div>`;
             }
@@ -2326,7 +2345,7 @@
                 // 配藥/測試模式
                 document.getElementById('drugNameDispensing').textContent = drug.name;
                 document.getElementById('drugQuantityBadge').textContent = `×${gameState.currentQuantity}`;
-                document.getElementById('specBadge').textContent = `${drug.stripSize}/排 ${drug.boxSize}/盒`;
+                document.getElementById('specBadge').textContent = `${drug.stripSize}/排${drug.boxSize ? ` ${drug.boxSize}/${getDrugUnitLabel(drug) || '盒'}` : ''}`;
             }
 
             // Update Image
@@ -2406,7 +2425,7 @@
 
             // 更新規格資訊顯示（配藥/測試模式）
             if (clickedDrug && gameState.mode !== 'location') {
-                document.getElementById('specBadge').textContent = `${clickedDrug.stripSize}/排 ${clickedDrug.boxSize}/盒`;
+                document.getElementById('specBadge').textContent = `${clickedDrug.stripSize}/排${clickedDrug.boxSize ? ` ${clickedDrug.boxSize}/${getDrugUnitLabel(clickedDrug) || '盒'}` : ''}`;
             }
 
             let isCorrect = drug.cabinet === cabinet && drug.col === col;
@@ -2441,7 +2460,7 @@
             // 確保規格資訊正確顯示為題目藥品的規格
             const drug = gameState.currentDrug;
             if (drug) {
-                document.getElementById('specBadge').textContent = `${drug.stripSize}/排 ${drug.boxSize}/盒`;
+                document.getElementById('specBadge').textContent = `${drug.stripSize}/排${drug.boxSize ? ` ${drug.boxSize}/${getDrugUnitLabel(drug) || '盒'}` : ''}`;
             }
 
             // 位置確認後重置計數器，讓用戶從零開始計算正確的藥品

@@ -10,7 +10,8 @@
 ## Git 歷史
 
 ```
-* 9facba7 feat: 套用 Patch1 更新 A/B/C 櫃藥品位置與屬性
+* 9f81a57 fix: 前台遊戲同步 cabinetConfig 動態渲染 + 補齊 13 張藥品圖片
+* c9660dc feat: 套用 Patch1 更新 A/B/C 櫃藥品位置與屬性
 * a26e322 fix: 後台 boxSize 欄位允許留白
 * 2ebac05 docs: 新增 EdTech Support 藥劑部_AG 補丁更新 0129 的筆記
 * b2bd47c 更新 .shared-ai-context
@@ -93,6 +94,7 @@
 
 ## 變更日誌
 
+- [2026-02-11] Claude Opus 4.6: 前台遊戲同步 cabinetConfig（B 櫃 7 列、E/F 抽屜 6 列、unit/colSpan 支援）+ 補齊 13 張藥品圖片
 - [2026-02-11] Claude Opus 4.6: 套用 Patch1 更新 A/B/C 櫃藥品位置與屬性、更新 drug_map.js 圖片映射、修復後台 saveModal unit/colSpan 儲存邏輯
 - [2026-02-09] Claude Opus 4.6: 新增變更歷程追蹤面板與意見回饋欄位，匯出時附帶歷程
 - [2026-02-09] Claude Opus 4.6: 移除後台圖片替換功能（localStorage 容量限制）
