@@ -1,6 +1,6 @@
 // drug_data.js -- 共用藥品資料庫
 // 由 dispensing-game.html 與 admin.html 共同引用
-// Last modified: 2026-02-11 (Patch1: A/B/C 櫃更新)
+// Last modified: 2026-02-12 (Patch2: E/F/G 更新與桌面維持 1x5)
 
 // ==================== 櫃位結構設定 ====================
 const cabinetConfig = {
@@ -175,7 +175,7 @@ const drugDatabase = [
   { name: "Takepron", cabinet: "J", section: "drawer2", row: 3, col: 2, stripSize: 14, boxSize: 28 },
   { name: "Mopride", cabinet: "J", section: "drawer2", row: 3, col: 3, stripSize: 10, boxSize: 100 },
   { name: "Midorine", cabinet: "J", section: "drawer2", row: 4, col: 3, stripSize: 10, boxSize: 100 },
-  { name: "Doxymycin", cabinet: "J", section: "drawer2", row: 4, col: 1, stripSize: 10, boxSize: 100 },
+  { name: "Doxymycin", cabinet: "J", section: "drawer2", row: 5, col: 1, stripSize: 10, boxSize: 100 },
 
   // ========== I 櫃 ==========
   // I1 抽屜 (3列布局)
@@ -216,7 +216,6 @@ const drugDatabase = [
   { name: "Cephalexin", cabinet: "H", section: "drawer1", row: 3, col: 1, stripSize: 10, boxSize: 100 },
   { name: "Cordarone", cabinet: "H", section: "drawer1", row: 3, col: 2, stripSize: 10, boxSize: 30 },
   { name: "Userm", cabinet: "H", section: "drawer1", row: 3, col: 3, stripSize: 10, boxSize: 100 },
-  { name: "Eurodin", cabinet: "G", section: "drawer1", row: 4, col: 2, stripSize: 10, boxSize: 100 },
   // H2 抽屜
   { name: "Aleviatin", cabinet: "H", section: "drawer2", row: 1, col: 1, stripSize: 21, boxSize: 100 },
   { name: "Glyxambi", cabinet: "H", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 30 },
@@ -229,68 +228,69 @@ const drugDatabase = [
   { name: "Abilify", cabinet: "H", section: "drawer2", row: 3, col: 3, stripSize: 10, boxSize: 30 },
   { name: "Apa-Mirtazapine ODT", cabinet: "H", section: "drawer2", row: 4, col: 3, stripSize: 10, boxSize: 30 },
   { name: "Tofranil 10mg", cabinet: "H", section: "drawer2", row: 4, col: 2, stripSize: 10, boxSize: 100 },
-  { name: "Clozaril", cabinet: "H", section: "drawer2", row: 4, col: 3, stripSize: 10, boxSize: 100 },
+  { name: "Clozaril", cabinet: "H", section: "drawer2", row: 5, col: 3, stripSize: 10, boxSize: 100 },
 
   // ========== G 櫃 ==========
   // G1 抽屜 (3列布局)
-  { name: "Secorin", cabinet: "G", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 100 },
-  { name: "Lexotan", cabinet: "G", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 50 },
-  { name: "Utraphen", cabinet: "G", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 100 },
-  { name: "Rivotril", cabinet: "G", section: "drawer1", row: 2, col: 1, stripSize: 10, boxSize: 100 },
-  { name: "Stilnox", cabinet: "G", section: "drawer1", row: 2, col: 2, stripSize: 14, boxSize: 20 },
-  { name: "Ativan", cabinet: "G", section: "drawer1", row: 3, col: 1, stripSize: 10, boxSize: 100 },
-  { name: "Alpraline", cabinet: "G", section: "drawer1", row: 3, col: 3, stripSize: 10, boxSize: 100 },
+  { name: "Secorin", cabinet: "G", section: "drawer1", row: 1, col: 1, unit: "束", stripSize: 10, boxSize: 100 },
+  { name: "Lexotan", cabinet: "G", section: "drawer1", row: 1, col: 2, unit: "束", stripSize: 10, boxSize: 200 },
+  { name: "Utraphen", cabinet: "G", section: "drawer1", row: 1, col: 3, unit: "束", stripSize: 10, boxSize: 100 },
+  { name: "Rivotril", cabinet: "G", section: "drawer1", row: 3, col: 2, unit: "束", stripSize: 10, boxSize: 240 },
+  { name: "Stilnox", cabinet: "G", section: "drawer1", row: 3, col: 3, unit: "束", stripSize: 14, boxSize: 280 },
+  { name: "Ativan", cabinet: "G", section: "drawer1", row: 4, col: 1, unit: "束", stripSize: 10, boxSize: 100 },
+  { name: "Eurodin", cabinet: "G", section: "drawer1", row: 5, col: 2, unit: "束", stripSize: 10, boxSize: 100 },
+  { name: "Alpraline", cabinet: "G", section: "drawer1", row: 5, col: 3, unit: "束", stripSize: 10, boxSize: 100 },
   // G2 抽屜
-  { name: "Mirapex 1mg", cabinet: "G", section: "drawer2", row: 1, col: 1, stripSize: 10, boxSize: 30 },
   { name: "Advagraf 1mg (G)", cabinet: "G", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 50 },
+  { name: "Mirapex 1mg", cabinet: "G", section: "drawer2", row: 1, col: 3, stripSize: 10, boxSize: 30 },
 
   // ========== F 櫃 ==========
   // F1 抽屜
-  { name: "Seroquel XR 200mg", cabinet: "F", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 60 },
-  { name: "Isoptin SR", cabinet: "F", section: "drawer1", row: 1, col: 2, stripSize: 15, boxSize: 100 },
-  { name: "Syntam", cabinet: "F", section: "drawer1", row: 1, col: 3, stripSize: 10, boxSize: 100 },
-  { name: "Dosin", cabinet: "F", section: "drawer1", row: 2, col: 1, stripSize: 10, boxSize: 100 },
-  { name: "Nolvadex", cabinet: "F", section: "drawer1", row: 3, col: 1, stripSize: 10, boxSize: 30 },
-  { name: "Keppra", cabinet: "F", section: "drawer1", row: 3, col: 2, stripSize: 10, boxSize: 60 },
-  { name: "Methylcobal", cabinet: "F", section: "drawer1", row: 3, col: 3, stripSize: 10, boxSize: 100 },
-  { name: "Uroso", cabinet: "F", section: "drawer1", row: 4, col: 2, stripSize: 10, boxSize: 100 },
+  { name: "Seroquel XR 200 mg/tab", cabinet: "F", section: "drawer1", row: 1, col: 1, stripSize: 10 },
+  { name: "Isoptin SR", cabinet: "F", section: "drawer1", row: 1, col: 2, stripSize: 15 },
+  { name: "Syntam", cabinet: "F", section: "drawer1", row: 1, col: 3, stripSize: 10 },
+  { name: "Dosin", cabinet: "F", section: "drawer1", row: 3, col: 2, stripSize: 10 },
+  { name: "Keppra FC 500 mg/tab", cabinet: "F", section: "drawer1", row: 4, col: 2, stripSize: 10 },
+  { name: "Methylcobal", cabinet: "F", section: "drawer1", row: 4, col: 3, stripSize: 10 },
+  { name: "Nolvadex", cabinet: "F", section: "drawer1", row: 5, col: 1, stripSize: 10 },
+  { name: "Uroso", cabinet: "F", section: "drawer1", row: 6, col: 2, stripSize: 10 },
   // F2 抽屜
-  { name: "Procal", cabinet: "F", section: "drawer2", row: 1, col: 1, stripSize: 10, boxSize: 100 },
-  { name: "LAMICTAL", cabinet: "F", section: "drawer2", row: 1, col: 2, stripSize: 10, boxSize: 100 },
-  { name: "Depakine", cabinet: "F", section: "drawer2", row: 1, col: 3, stripSize: 10, boxSize: 100 },
-  { name: "Sinemet 100#", cabinet: "F", section: "drawer2", row: 2, col: 2, stripSize: 10, boxSize: 100 },
-  { name: "Salazine 28#", cabinet: "F", section: "drawer2", row: 3, col: 1, stripSize: 10, boxSize: 28 },
-  { name: "Madopar 21#", cabinet: "F", section: "drawer2", row: 4, col: 2, stripSize: 21, boxSize: 100 },
+  { name: "Procal", cabinet: "F", section: "drawer2", row: 1, col: 1, stripSize: 10 },
+  { name: "LAMICTAL", cabinet: "F", section: "drawer2", row: 1, col: 2, stripSize: 15 },
+  { name: "Depakine", cabinet: "F", section: "drawer2", row: 1, col: 3, unit: "罐", stripSize: 1, boxSize: 28 },
+  { name: "Sinemet 100#", cabinet: "F", section: "drawer2", row: 2, col: 2, stripSize: 1, boxSize: 100 },
+  { name: "Salazine", cabinet: "F", section: "drawer2", row: 3, col: 1, unit: "包", stripSize: 1, boxSize: 28 },
+  { name: "Madopar", cabinet: "F", section: "drawer2", row: 4, col: 2, stripSize: 1, boxSize: 21 },
   // F 左門
-  { name: "Pacrea", cabinet: "F", section: "doorL", row: 1, col: 1, isBox: true, stripSize: 10, boxSize: 100 },
+  { name: "Pacrea", cabinet: "F", section: "doorL", row: 1, col: 1, isBox: true, stripSize: 1, boxSize: 100 },
 
   // ========== E 櫃 ==========
   // E1 抽屜
-  { name: "Neuquinon", cabinet: "E", section: "drawer1", row: 1, col: 1, stripSize: 10, boxSize: 100 },
-  { name: "Atanaal 5mg", cabinet: "E", section: "drawer1", row: 1, col: 2, stripSize: 10, boxSize: 30 },
-  { name: "Sandimmun 25", cabinet: "E", section: "drawer1", row: 1, col: 3, stripSize: 5, boxSize: 50 },
-  { name: "Nitrostat Sub.", cabinet: "E", section: "drawer1", row: 2, col: 1, stripSize: 10, boxSize: 25 },
-  { name: "Folina", cabinet: "E", section: "drawer1", row: 2, col: 2, stripSize: 10, boxSize: 100 },
-  { name: "Stable 25", cabinet: "E", section: "drawer1", row: 2, col: 3, stripSize: 10, boxSize: 100 },
-  { name: "Ginkgocentrate", cabinet: "E", section: "drawer1", row: 3, col: 1, stripSize: 10, boxSize: 100 },
-  { name: "Votan", cabinet: "E", section: "drawer1", row: 3, col: 2, stripSize: 10, boxSize: 100 },
-  { name: "Imolex", cabinet: "E", section: "drawer1", row: 3, col: 3, stripSize: 10, boxSize: 100 },
-  { name: "Visanne", cabinet: "E", section: "drawer1", row: 4, col: 2, isBox: true, stripSize: 14, boxSize: 28 },
-  { name: "Utrogestan", cabinet: "E", section: "drawer1", row: 4, col: 3, stripSize: 15, boxSize: 100 },
+  { name: "Neuquinon", cabinet: "E", section: "drawer1", row: 1, col: 1, stripSize: 10 },
+  { name: "Atanaal 5mg", cabinet: "E", section: "drawer1", row: 1, col: 2, stripSize: 10 },
+  { name: "Sandimmun Neoral 25 mg/cap", cabinet: "E", section: "drawer1", row: 1, col: 3, stripSize: 5, boxSize: 50 },
+  { name: "Nitrostat Sub.", cabinet: "E", section: "drawer1", row: 3, col: 1, stripSize: 1 },
+  { name: "Stable 25 mg/tab", cabinet: "E", section: "drawer1", row: 3, col: 2, stripSize: 10 },
+  { name: "Ginkgocentrate", cabinet: "E", section: "drawer1", row: 4, col: 1, stripSize: 10 },
+  { name: "Folina", cabinet: "E", section: "drawer1", row: 4, col: 2, stripSize: 10 },
+  { name: "Imolex", cabinet: "E", section: "drawer1", row: 4, col: 3, stripSize: 10 },
+  { name: "Votan", cabinet: "E", section: "drawer1", row: 5, col: 2, stripSize: 10 },
+  { name: "Visanne", cabinet: "E", section: "drawer1", row: 6, col: 1, isBox: true, stripSize: 14, boxSize: 28 },
+  { name: "Utrogestan", cabinet: "E", section: "drawer1", row: 6, col: 2, stripSize: 15 },
   // E2 抽屜
-  { name: "Foxone oph.", cabinet: "E", section: "drawer2", row: 1, col: 1, stripSize: 1, boxSize: 1 },
-  { name: "O.N.S.D.", cabinet: "E", section: "drawer2", row: 1, col: 2, stripSize: 1, boxSize: 1 },
-  { name: "Comtan 30#", cabinet: "E", section: "drawer2", row: 1, col: 3, stripSize: 30, boxSize: 100 },
-  { name: "Artelac oph.", cabinet: "E", section: "drawer2", row: 2, col: 1, stripSize: 1, boxSize: 1 },
-  { name: "Methacin gel", cabinet: "E", section: "drawer2", row: 2, col: 2, stripSize: 1, boxSize: 1 },
-  { name: "Nincort", cabinet: "E", section: "drawer2", row: 2, col: 3, stripSize: 1, boxSize: 1 },
-  { name: "Rinderon-V", cabinet: "E", section: "drawer2", row: 3, col: 1, stripSize: 1, boxSize: 1 },
-  { name: "Sinomin oph.", cabinet: "E", section: "drawer2", row: 4, col: 1, stripSize: 1, boxSize: 1 },
-  { name: "Tetracycline oph", cabinet: "E", section: "drawer2", row: 4, col: 2, stripSize: 1, boxSize: 1 },
-  { name: "C.B. Strong", cabinet: "E", section: "drawer2", row: 4, col: 3, stripSize: 10, boxSize: 100 },
+  { name: "Foxone oph.", cabinet: "E", section: "drawer2", row: 1, col: 1, stripSize: 1 },
+  { name: "O.N.S.D.", cabinet: "E", section: "drawer2", row: 1, col: 2, stripSize: 1 },
+  { name: "Comtan", cabinet: "E", section: "drawer2", row: 1, col: 3, stripSize: 1, boxSize: 30 },
+  { name: "Artelac oph.", cabinet: "E", section: "drawer2", row: 2, col: 1, stripSize: 1 },
+  { name: "Methacin gel", cabinet: "E", section: "drawer2", row: 2, col: 2, stripSize: 1 },
+  { name: "Rinderon-V", cabinet: "E", section: "drawer2", row: 4, col: 1, stripSize: 1 },
+  { name: "Nincort", cabinet: "E", section: "drawer2", row: 4, col: 3, stripSize: 1 },
+  { name: "Sinomin oph.", cabinet: "E", section: "drawer2", row: 5, col: 1, stripSize: 1 },
+  { name: "Tetracycline oph", cabinet: "E", section: "drawer2", row: 5, col: 2, stripSize: 1 },
+  { name: "C.B. Strong", cabinet: "E", section: "drawer2", row: 5, col: 3, stripSize: 1 },
 
   // ========== 桌面區 ==========
-  { name: "Biocal", cabinet: "Desktop", row: 1, col: 1, stripSize: 7, boxSize: 28 },
+  { name: "Biocal", cabinet: "Desktop", row: 1, col: 1, isBox: true, stripSize: 7, boxSize: 28 },
   { name: "Coxine", cabinet: "Desktop", row: 1, col: 2, stripSize: 14, boxSize: 100 },
   { name: "Sennapur", cabinet: "Desktop", row: 1, col: 3, stripSize: 10, boxSize: 100 },
   { name: "Loditon", cabinet: "Desktop", row: 1, col: 4, stripSize: 10, boxSize: 100 },

@@ -711,13 +711,15 @@
         <div class="form-group">
           <div style="display: flex; gap: 10px;">
             <div style="flex: 1;">
-              <label for="inputColSpan">橫跨格數 (colSpan)</label>
-              <input type="number" id="inputColSpan" min="1" max="2" value="1">
+              <label for="inputColSpan">橫向跨格 (colSpan)</label>
+              <input type="number" id="inputColSpan" min="1" max="4" value="1">
             </div>
             <div style="flex: 1;">
-              <!-- Spacer or other future field -->
+              <label for="inputRowSpan">直向跨格 (rowSpan)</label>
+              <input type="number" id="inputRowSpan" min="1" max="4" value="1">
             </div>
           </div>
+          <div class="form-error" id="errorSpan"></div>
         </div>
         <div class="form-group">
           <label for="inputName">藥品名稱</label>
@@ -1038,7 +1040,7 @@
 
         for (let c = 1; c <= cols; c++) {
           const drug = findDrug(cabinetKey, section, r, c);
-          // Check if this cell is covered by a previous colSpan
+          // Skip cells covered by any multi-span drug.
           if (isCellCovered(cabinetKey, section, r, c)) continue;
 
           const cell = createCell(drug, cabinetKey, section, r, c);
@@ -1049,16 +1051,42 @@
       container.appendChild(grid);
     }
 
-    function isCellCovered(cabinet, section, row, col) {
-      // Look at previous columns in the same row
-      // If there's a drug at (col-1) with colSpan>=2, then (col) is covered.
-      // Note: We only support colSpan up to 2 for now, but general logic is:
-      // Check (col-k) has colSpan > k
-      if (col > 1) {
-        const prev = findDrug(cabinet, section, row, col - 1);
-        if (prev && (prev.colSpan || 1) >= 2) return true;
+    function isSameSection(sectionA, sectionB) {
+      const a = sectionA || null;
+      const b = sectionB || null;
+      return a === b;
+    }
+
+    function getDrugSpan(drug) {
+      const colSpan = Math.max(1, parseInt(drug?.colSpan, 10) || 1);
+      const rowSpan = Math.max(1, parseInt(drug?.rowSpan, 10) || 1);
+      return { colSpan: colSpan, rowSpan: rowSpan };
+    }
+
+    function getGridBounds(cabinetKey, section) {
+      const conf = cabinetConfig[cabinetKey];
+      if (!conf) return null;
+      if (conf.type === 'shelf' || conf.type === 'desktop') {
+        return { rows: conf.rows, cols: conf.cols };
       }
-      return false;
+      if (conf.type === 'drawer' && section && conf.sections[section]) {
+        const sec = conf.sections[section];
+        return { rows: sec.rows, cols: sec.cols };
+      }
+      return null;
+    }
+
+    function isCellCovered(cabinet, section, row, col) {
+      return adminState.workingCopy.some(d => {
+        if (d.cabinet !== cabinet) return false;
+        if (!isSameSection(d.section, section)) return false;
+        if (d.row === row && d.col === col) return false;
+
+        const span = getDrugSpan(d);
+        const rowInRange = row >= d.row && row < (d.row + span.rowSpan);
+        const colInRange = col >= d.col && col < (d.col + span.colSpan);
+        return rowInRange && colInRange;
+      });
     }
 
     function renderDrawerCabinet(container, cabinetKey, sections) {
@@ -1099,8 +1127,14 @@
       cell.dataset.col = col;
 
       if (drug) {
-        if ((drug.colSpan || 1) > 1) {
-          cell.style.gridColumn = 'span ' + drug.colSpan;
+        const span = getDrugSpan(drug);
+        if (span.colSpan > 1) {
+          cell.style.gridColumn = 'span ' + span.colSpan;
+        }
+        if (span.rowSpan > 1) {
+          cell.style.gridRow = 'span ' + span.rowSpan;
+        }
+        if (span.colSpan > 1 || span.rowSpan > 1) {
           cell.style.backgroundColor = '#fff8e1'; // slightly different bg for large items
         }
 
@@ -1130,6 +1164,7 @@
         cell.title = drug.name + '\n' +
           drug.stripSize + ' 顆/排, ' + (Number.isFinite(drug.boxSize) ? (drug.boxSize + ' 顆/盒') : '盒裝數未設定') +
           (unit ? ' (' + unit + ')' : '') + '\n' +
+          '跨格: ' + span.colSpan + 'x' + span.rowSpan + '\n' +
           formatLocation(cabinetKey, section, row, col);
 
 
@@ -1220,10 +1255,39 @@
       e.currentTarget.classList.remove('drag-over');
     }
 
+    function getDrugRect(drug, rowOverride, colOverride) {
+      const span = getDrugSpan(drug);
+      const row = rowOverride != null ? rowOverride : drug.row;
+      const col = colOverride != null ? colOverride : drug.col;
+      return {
+        rowStart: row,
+        rowEnd: row + span.rowSpan - 1,
+        colStart: col,
+        colEnd: col + span.colSpan - 1
+      };
+    }
+
+    function isRectOverlap(a, b) {
+      return !(a.colEnd < b.colStart || a.colStart > b.colEnd || a.rowEnd < b.rowStart || a.rowStart > b.rowEnd);
+    }
+
+    function findOverlaps(cabinet, section, row, col, colSpan, rowSpan, excludeSet) {
+      const targetRect = {
+        rowStart: row,
+        rowEnd: row + rowSpan - 1,
+        colStart: col,
+        colEnd: col + colSpan - 1
+      };
+      return adminState.workingCopy.filter(d => {
+        if (excludeSet && excludeSet.has(d)) return false;
+        if (d.cabinet !== cabinet) return false;
+        if (!isSameSection(d.section, section)) return false;
+        return isRectOverlap(targetRect, getDrugRect(d));
+      });
+    }
+
     function onDrop(e) {
       e.preventDefault();
-
-
       e.currentTarget.classList.remove('drag-over');
 
       let data;
@@ -1236,102 +1300,72 @@
       const tRow = parseInt(targetCell.dataset.row);
       const tCol = parseInt(targetCell.dataset.col);
 
-      // Validate target bounds for multi-cell drugs
-      // We need to know the source drug's colSpan to check if it fits
-      // Standard drag data doesn't have colSpan, let's fetch source drug from DB
       const srcDrugRef = findDrug(data.cabinet, data.section, data.row, data.col);
-      const colSpan = (srcDrugRef && srcDrugRef.colSpan) || 1;
-
-      // Check if target position + colSpan exceeds max columns
-      const conf = cabinetConfig[tCab];
-      let maxCols = 0;
-      if (conf.type === 'shelf' || conf.type === 'desktop') {
-        maxCols = conf.cols;
-      } else if (conf.type === 'drawer' && tSec && conf.sections[tSec]) {
-        maxCols = conf.sections[tSec].cols;
-      }
-
-      if (tCol + colSpan - 1 > maxCols) {
-        showToast('無法放置：超出邊界', 'error');
-        return;
-      }
+      if (!srcDrugRef) return;
+      const srcSpan = getDrugSpan(srcDrugRef);
 
       // Same position? do nothing
       if (data.cabinet === tCab && data.section === tSec && data.row === tRow && data.col === tCol) return;
 
       const srcIdx = findDrugIndex(data.cabinet, data.section, data.row, data.col);
-      // Target might be the main cell OR a covered cell (if we drop on a large item)
-      // But actually, covered cells are not rendered, so we only drop on "head" cells.
-      // HOWEVER, if we drop a 2-col item on col 3, we need to check if col 4 is occupied by ANOTHER drug
-      let tgtIdx = -1;
-      let collisionName = '';
-
-      // Check collision for all spanned cells
-      for (let i = 0; i < colSpan; i++) {
-        const checkCol = tCol + i;
-        // Find any drug at this position
-        // Note: findDrug returns the drug if the cell is the head of a drug
-        // It does NOT return a drug if the cell is covered by a previous drug.
-        // So we must also check checkCol-1 for coverage? 
-        // simplified: get any drug that overlaps with [tCol, tCol+colSpan-1]
-
-        // 1. Is there a drug HEAD at checkCol?
-        const d = findDrug(tCab, tSec, tRow, checkCol);
-        if (d && d !== srcDrugRef) {
-          tgtIdx = adminState.workingCopy.indexOf(d);
-          collisionName = d.name;
-          break;
-        }
-
-        // 2. Is checkCol covered by a drug at checkCol-1? (only need to check immediate left for colSpan=2)
-        if (isCellCovered(tCab, tSec, tRow, checkCol)) {
-          // Find that covering drug
-          const d2 = findDrug(tCab, tSec, tRow, checkCol - 1); // simplistic
-          if (d2 && d2 !== srcDrugRef) {
-            tgtIdx = adminState.workingCopy.indexOf(d2);
-            collisionName = d2.name;
-            break;
-          }
-        }
-      }
-
       if (srcIdx === -1) return;
 
-      if (tgtIdx !== -1) {
-        // Swap
-        if (colSpan > 1 || (adminState.workingCopy[tgtIdx].colSpan || 1) > 1) {
-          if (!confirm('多格藥品不建議直接交換（易重疊錯誤）。確定要強制交換嗎？\n建議先移到空位。')) return;
-          // Simple swap logic might fail if sizes differ. For now allow it but user warned.
-        }
-        if (!confirm('目標位置已有藥品「' + collisionName + '」，確定要交換位置嗎？')) return;
-
-        // Update target drug to source position
-        adminState.workingCopy[tgtIdx].cabinet = data.cabinet;
-        adminState.workingCopy[tgtIdx].row = data.row;
-        adminState.workingCopy[tgtIdx].col = data.col;
-        if (data.section) {
-          adminState.workingCopy[tgtIdx].section = data.section;
-        } else {
-          delete adminState.workingCopy[tgtIdx].section;
-        }
+      const tBounds = getGridBounds(tCab, tSec);
+      if (!tBounds) {
+        showToast('無法放置：目標區域無效', 'error');
+        return;
+      }
+      if (tCol + srcSpan.colSpan - 1 > tBounds.cols || tRow + srcSpan.rowSpan - 1 > tBounds.rows) {
+        showToast('無法放置：超出邊界', 'error');
+        return;
       }
 
-      // Update source drug to target position
-      adminState.workingCopy[srcIdx].cabinet = tCab;
-      adminState.workingCopy[srcIdx].row = tRow;
-      adminState.workingCopy[srcIdx].col = tCol;
-      if (tSec) {
-        adminState.workingCopy[srcIdx].section = tSec;
-      } else {
-        delete adminState.workingCopy[srcIdx].section;
+      const excludes = new Set([srcDrugRef]);
+      const overlaps = findOverlaps(tCab, tSec, tRow, tCol, srcSpan.colSpan, srcSpan.rowSpan, excludes);
+      let swappedDrug = null;
+
+      if (overlaps.length > 1) {
+        showToast('目標區域有多筆藥品重疊，請先清空區域後再移動', 'error');
+        return;
       }
+
+      if (overlaps.length === 1) {
+        swappedDrug = overlaps[0];
+        const swappedSpan = getDrugSpan(swappedDrug);
+
+        // 先限制交換為 1x1，避免多格物件互換產生複雜重疊。
+        if (srcSpan.colSpan > 1 || srcSpan.rowSpan > 1 || swappedSpan.colSpan > 1 || swappedSpan.rowSpan > 1) {
+          showToast('多格藥品暫不支援直接交換，請先移到空位', 'error');
+          return;
+        }
+
+        if (!confirm('目標位置已有藥品「' + swappedDrug.name + '」，確定要交換位置嗎？')) return;
+
+        const sBounds = getGridBounds(data.cabinet, data.section);
+        if (!sBounds || data.col + swappedSpan.colSpan - 1 > sBounds.cols || data.row + swappedSpan.rowSpan - 1 > sBounds.rows) {
+          showToast('交換失敗：來源位置無法容納目標藥品', 'error');
+          return;
+        }
+
+        swappedDrug.cabinet = data.cabinet;
+        swappedDrug.row = data.row;
+        swappedDrug.col = data.col;
+        if (data.section) swappedDrug.section = data.section;
+        else delete swappedDrug.section;
+      }
+
+      srcDrugRef.cabinet = tCab;
+      srcDrugRef.row = tRow;
+      srcDrugRef.col = tCol;
+      if (tSec) srcDrugRef.section = tSec;
+      else delete srcDrugRef.section;
 
       const srcLoc = formatLocation(data.cabinet, data.section, data.row, data.col);
       const tgtLoc = formatLocation(tCab, tSec, tRow, tCol);
-      if (tgtIdx !== -1) {
-        logChange('move', '「' + adminState.workingCopy[srcIdx].name + '」與「' + collisionName + '」交換（' + srcLoc + ' ↔ ' + tgtLoc + '）');
+      if (swappedDrug) {
+        logChange('move', '「' + srcDrugRef.name + '」與「' + swappedDrug.name + '」交換（' + srcLoc + ' ↔ ' + tgtLoc + '）');
       } else {
-        logChange('move', '「' + adminState.workingCopy[srcIdx].name + '」' + srcLoc + ' → ' + tgtLoc);
+        logChange('move', '「' + srcDrugRef.name + '」' + srcLoc + ' → ' + tgtLoc);
       }
 
       markDirty();
@@ -1355,6 +1389,7 @@
         document.getElementById('inputBox').value = drug.boxSize != null ? drug.boxSize : '';
         document.getElementById('inputUnit').value = drug.unit || (drug.isBox ? '盒' : '');
         document.getElementById('inputColSpan').value = drug.colSpan || 1;
+        document.getElementById('inputRowSpan').value = drug.rowSpan || 1;
         // document.getElementById('inputIsBox').checked = !!drug.isBox; // Deprecated
         document.getElementById('btnRemove').style.display = '';
       } else {
@@ -1366,6 +1401,7 @@
         document.getElementById('inputBox').value = '';
         document.getElementById('inputUnit').value = '';
         document.getElementById('inputColSpan').value = 1;
+        document.getElementById('inputRowSpan').value = 1;
         // document.getElementById('inputIsBox').checked = false;
         document.getElementById('btnRemove').style.display = 'none';
       }
@@ -1407,7 +1443,10 @@
       const stripSize = parseInt(document.getElementById('inputStrip').value);
       const boxSize = parseInt(document.getElementById('inputBox').value);
       const unit = document.getElementById('inputUnit').value.trim();
-      const colSpan = parseInt(document.getElementById('inputColSpan').value);
+      const colSpanRaw = parseInt(document.getElementById('inputColSpan').value);
+      const rowSpanRaw = parseInt(document.getElementById('inputRowSpan').value);
+      const colSpan = Number.isFinite(colSpanRaw) ? Math.min(4, Math.max(1, colSpanRaw)) : 1;
+      const rowSpan = Number.isFinite(rowSpanRaw) ? Math.min(4, Math.max(1, rowSpanRaw)) : 1;
       // const isBox = document.getElementById('inputIsBox').checked; // Deprecated
       const isBox = (unit === '盒'); // Backward compatibility: if unit is '盒', set isBox=true
       const slot = adminState.editingSlot;
@@ -1432,8 +1471,21 @@
         valid = false;
       }
 
-      if (isNaN(colSpan) || colSpan < 1) {
-        // reset to 1
+      if (!Number.isFinite(colSpanRaw) || colSpanRaw < 1 || colSpanRaw > 4 ||
+        !Number.isFinite(rowSpanRaw) || rowSpanRaw < 1 || rowSpanRaw > 4) {
+        showFormError('errorSpan', '橫向/直向跨格需介於 1 到 4');
+        valid = false;
+      }
+
+      const bounds = getGridBounds(slot.cabinet, slot.section);
+      if (!bounds) {
+        showFormError('errorSpan', '無法取得該區域尺寸');
+        valid = false;
+      } else {
+        if (slot.col + colSpan - 1 > bounds.cols || slot.row + rowSpan - 1 > bounds.rows) {
+          showFormError('errorSpan', '跨格超出邊界，請降低跨格數');
+          valid = false;
+        }
       }
 
       // Duplicate name check (skip self)
@@ -1448,13 +1500,12 @@
         }
       }
 
-      // Position conflict (for new drug or if position changed)
-      if (!adminState.editingDrug) {
-        const conflict = findDrug(slot.cabinet, slot.section, slot.row, slot.col);
-        if (conflict) {
-          showFormError('errorName', '該位置已有藥品');
-          valid = false;
-        }
+      const excludeSet = new Set();
+      if (adminState.editingDrug) excludeSet.add(adminState.editingDrug);
+      const overlapDrugs = findOverlaps(slot.cabinet, slot.section, slot.row, slot.col, colSpan, rowSpan, excludeSet);
+      if (overlapDrugs.length > 0) {
+        showFormError('errorSpan', '跨格與「' + overlapDrugs[0].name + '」重疊');
+        valid = false;
       }
 
       if (!valid) return;
@@ -1482,6 +1533,11 @@
         } else {
           delete adminState.editingDrug.colSpan;
         }
+        if (rowSpan > 1) {
+          adminState.editingDrug.rowSpan = rowSpan;
+        } else {
+          delete adminState.editingDrug.rowSpan;
+        }
         logChange('edit', '「' + oldName + '」' + (oldName !== name ? ' → 「' + name + '」' : '') + ' @ ' + loc);
       } else {
         // Add new
@@ -1497,6 +1553,7 @@
         if (isBox) newDrug.isBox = true;
         if (unit && unit !== '盒') newDrug.unit = unit;
         if (colSpan > 1) newDrug.colSpan = colSpan;
+        if (rowSpan > 1) newDrug.rowSpan = rowSpan;
         adminState.workingCopy.push(newDrug);
         logChange('add', '「' + name + '」 @ ' + loc);
       }
@@ -1662,6 +1719,7 @@
       if (drug.isBox) parts.push('isBox: true');
       if (drug.unit) parts.push('unit: ' + JSON.stringify(drug.unit));
       if (drug.colSpan > 1) parts.push('colSpan: ' + drug.colSpan);
+      if (drug.rowSpan > 1) parts.push('rowSpan: ' + drug.rowSpan);
       parts.push('stripSize: ' + drug.stripSize);
       if (Number.isFinite(drug.boxSize)) parts.push('boxSize: ' + drug.boxSize);
       return '{ ' + parts.join(', ') + ' }';

@@ -1608,6 +1608,54 @@
             el.textContent = gameState.isPlaying ? `${gameState.questionElapsed}s` : '--';
         }
 
+        function getDrugSpan(drug) {
+            const colSpan = Math.max(1, parseInt(drug?.colSpan, 10) || 1);
+            const rowSpan = Math.max(1, parseInt(drug?.rowSpan, 10) || 1);
+            return { colSpan: colSpan, rowSpan: rowSpan };
+        }
+
+        function isSameSection(sectionA, sectionB) {
+            return (sectionA || null) === (sectionB || null);
+        }
+
+        function getDrugAtHead(cabinet, section, row, col) {
+            return drugDatabase.find(d => {
+                if (d.cabinet !== cabinet) return false;
+                if (!isSameSection(d.section, section)) return false;
+                const drugRow = d.row || 1;
+                return drugRow === row && d.col === col;
+            }) || null;
+        }
+
+        function isSlotCovered(cabinet, section, row, col) {
+            return drugDatabase.some(d => {
+                if (d.cabinet !== cabinet) return false;
+                if (!isSameSection(d.section, section)) return false;
+                const drugRow = d.row || 1;
+                if (drugRow === row && d.col === col) return false;
+                const span = getDrugSpan(d);
+                const rowInRange = row >= drugRow && row < (drugRow + span.rowSpan);
+                const colInRange = col >= d.col && col < (d.col + span.colSpan);
+                return rowInRange && colInRange;
+            });
+        }
+
+        function getGridSpanStyle(drug) {
+            if (!drug) return '';
+            const span = getDrugSpan(drug);
+            const styles = [];
+            if (span.colSpan > 1) styles.push(`grid-column: span ${span.colSpan}`);
+            if (span.rowSpan > 1) styles.push(`grid-row: span ${span.rowSpan}`);
+            return styles.length ? ` style="${styles.join('; ')}"` : '';
+        }
+
+        function applyGridSpan(card, drug) {
+            if (!drug) return;
+            const span = getDrugSpan(drug);
+            if (span.colSpan > 1) card.style.gridColumn = `span ${span.colSpan}`;
+            if (span.rowSpan > 1) card.style.gridRow = `span ${span.rowSpan}`;
+        }
+
         // ==================== 放大視窗功能 ====================
         function openCabinetZoom(cabinet, type) {
             const modal = document.getElementById('zoomModal');
@@ -1626,21 +1674,11 @@
                 grid.innerHTML = '';
 
                 for (let r = 1; r <= rows; r++) {
-                    const covered = new Set();
-                    // 先找 colSpan 覆蓋的格子
                     for (let c = 1; c <= cols; c++) {
-                        const d = drugDatabase.find(d => d.cabinet === cabinet && d.row === r && d.col === c && !d.section);
-                        if (d && d.colSpan > 1) {
-                            for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
-                        }
-                    }
-                    for (let c = 1; c <= cols; c++) {
-                        if (covered.has(c)) continue;
-                        const drug = drugDatabase.find(d =>
-                            d.cabinet === cabinet && d.row === r && d.col === c && !d.section
-                        );
+                        if (isSlotCovered(cabinet, null, r, c)) continue;
+                        const drug = getDrugAtHead(cabinet, null, r, c);
                         const card = createZoomDrugCard(drug, cabinet, r, c);
-                        if (drug && drug.colSpan > 1) card.style.gridColumn = `span ${drug.colSpan}`;
+                        applyGridSpan(card, drug);
                         grid.appendChild(card);
                     }
                 }
@@ -1662,8 +1700,11 @@
 
                     for (let r = 1; r <= maxRow; r++) {
                         for (let c = 1; c <= maxCol; c++) {
-                            const drug = drugDatabase.find(d => d.cabinet === cab && d.section === section && (d.row || 1) === r && d.col === c);
-                            html += createZoomDrugCard(drug, cab, r, c, section).outerHTML;
+                            if (isSlotCovered(cab, section, r, c)) continue;
+                            const drug = getDrugAtHead(cab, section, r, c);
+                            const card = createZoomDrugCard(drug, cab, r, c, section);
+                            applyGridSpan(card, drug);
+                            html += card.outerHTML;
                         }
                     }
                     html += '</div></div>';
@@ -1712,22 +1753,11 @@
             grid.innerHTML = '';
 
             for (let r = 1; r <= maxRow; r++) {
-                const covered = new Set();
-                // 先找 colSpan 覆蓋的格子
                 for (let c = 1; c <= maxCol; c++) {
-                    const d = drugDatabase.find(d => d.cabinet === cabinet && d.section === section && (d.row || 1) === r && d.col === c);
-                    if (d && d.colSpan > 1) {
-                        for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
-                    }
-                }
-
-                for (let c = 1; c <= maxCol; c++) {
-                    if (covered.has(c)) continue;
-                    const drug = drugDatabase.find(d => d.cabinet === cabinet && d.section === section && (d.row || 1) === r && d.col === c);
+                    if (isSlotCovered(cabinet, section, r, c)) continue;
+                    const drug = getDrugAtHead(cabinet, section, r, c);
                     const card = createZoomDrugCard(drug, cabinet, r, c, section);
-                    if (drug && drug.colSpan > 1) {
-                        card.style.gridColumn = `span ${drug.colSpan}`;
-                    }
+                    applyGridSpan(card, drug);
                     grid.appendChild(card);
                 }
             }
@@ -1850,6 +1880,9 @@
                     let isMatch = slot.dataset.cabinet === drug.cabinet;
                     if (drug.section) {
                         isMatch = isMatch && slot.dataset.section === drug.section && parseInt(slot.dataset.col) === drug.col;
+                        if (drug.row != null && slot.dataset.row) {
+                            isMatch = isMatch && parseInt(slot.dataset.row) === drug.row;
+                        }
                     } else {
                         isMatch = isMatch && parseInt(slot.dataset.row) === drug.row && parseInt(slot.dataset.col) === drug.col && !slot.dataset.section;
                     }
@@ -1944,24 +1977,14 @@
         function generateShelfSlots(cabinet, rows, cols) {
             let html = '';
             for (let r = 1; r <= rows; r++) {
-                const covered = new Set();
-                // 先找 colSpan 覆蓋的格子
                 for (let c = 1; c <= cols; c++) {
-                    const d = drugDatabase.find(d => d.cabinet === cabinet && d.row === r && d.col === c && !d.section);
-                    if (d && d.colSpan > 1) {
-                        for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
-                    }
-                }
-                for (let c = 1; c <= cols; c++) {
-                    if (covered.has(c)) continue;
-                    const drug = drugDatabase.find(d =>
-                        d.cabinet === cabinet && d.row === r && d.col === c && !d.section
-                    );
+                    if (isSlotCovered(cabinet, null, r, c)) continue;
+                    const drug = getDrugAtHead(cabinet, null, r, c);
                     const name = drug ? drug.name : '';
                     const displayName = name.length > 10 ? name.substring(0, 10) + '..' : name;
                     const unitLabel = drug ? getDrugUnitLabel(drug) : '';
                     const unitAttr = unitLabel ? ` data-unit="${unitLabel}"` : '';
-                    const spanStyle = drug?.colSpan > 1 ? ` style="grid-column: span ${drug.colSpan}"` : '';
+                    const spanStyle = getGridSpanStyle(drug);
                     const draggable = name ? 'true' : 'false';
                     html += `<div class="drug-slot"
                         draggable="${draggable}"${spanStyle}
@@ -1979,32 +2002,21 @@
         function generateDrawerSlots(cabinet, section) {
             let html = '';
             const cols = cabinetConfig[cabinet].sections[section].cols;
-            const covered = new Set();
-            // 預覽只顯示第一排，先計算覆蓋
             for (let c = 1; c <= cols; c++) {
-                const d = drugDatabase.find(d =>
-                    d.cabinet === cabinet && d.section === section && d.col === c && (d.row === 1 || !d.row)
-                );
-                if (d && d.colSpan > 1) {
-                    for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
-                }
-            }
-
-            for (let c = 1; c <= cols; c++) {
-                if (covered.has(c)) continue;
-                const drug = drugDatabase.find(d =>
-                    d.cabinet === cabinet && d.section === section && d.col === c && (d.row === 1 || !d.row)
-                );
+                // 預覽僅呈現第一行
+                if (isSlotCovered(cabinet, section, 1, c)) continue;
+                const drug = getDrugAtHead(cabinet, section, 1, c);
                 const name = drug ? drug.name : '';
                 const displayName = name.length > 8 ? name.substring(0, 8) + '..' : name;
                 const unitLabel = drug ? getDrugUnitLabel(drug) : '';
                 const unitAttr = unitLabel ? ` data-unit="${unitLabel}"` : '';
-                const spanStyle = drug?.colSpan > 1 ? ` style="grid-column: span ${drug.colSpan}"` : '';
+                const spanStyle = getGridSpanStyle(drug);
                 const draggable = name ? 'true' : 'false';
                 html += `<div class="drug-slot"
                     draggable="${draggable}"${spanStyle}
                     data-cabinet="${cabinet}"
                     data-section="${section}"
+                    data-row="1"
                     data-col="${c}"
                     data-drug-name="${name}"${unitAttr}
                     onclick="selectSlot(this); event.stopPropagation();"
@@ -2016,30 +2028,21 @@
         function generateDoorSlots(cabinet, section) {
             let html = '';
             const cols = cabinetConfig[cabinet].sections[section].cols;
-            const covered = new Set();
 
             for (let c = 1; c <= cols; c++) {
-                const d = drugDatabase.find(d => d.cabinet === cabinet && d.section === section && d.col === c);
-                if (d && d.colSpan > 1) {
-                    for (let s = 1; s < d.colSpan; s++) covered.add(c + s);
-                }
-            }
-
-            for (let c = 1; c <= cols; c++) {
-                if (covered.has(c)) continue;
-                const drug = drugDatabase.find(d =>
-                    d.cabinet === cabinet && d.section === section && d.col === c
-                );
+                if (isSlotCovered(cabinet, section, 1, c)) continue;
+                const drug = getDrugAtHead(cabinet, section, 1, c);
                 const name = drug ? drug.name : '';
                 const displayName = name.length > 7 ? name.substring(0, 7) + '..' : name;
                 const unitLabel = drug ? getDrugUnitLabel(drug) : '';
                 const unitAttr = unitLabel ? ` data-unit="${unitLabel}"` : '';
-                const spanStyle = drug?.colSpan > 1 ? ` style="grid-column: span ${drug.colSpan}"` : '';
+                const spanStyle = getGridSpanStyle(drug);
                 const draggable = name ? 'true' : 'false';
                 html += `<div class="drug-slot"
                     draggable="${draggable}"${spanStyle}
                     data-cabinet="${cabinet}"
                     data-section="${section}"
+                    data-row="1"
                     data-col="${c}"
                     data-drug-name="${name}"${unitAttr}
                     onclick="selectSlot(this); event.stopPropagation();"
@@ -2496,6 +2499,9 @@
                 let match = d.cabinet === cabinet && d.col === col;
                 if (section) {
                     match = match && d.section === section;
+                    if (row != null) {
+                        match = match && (d.row || 1) === row;
+                    }
                 } else if (row) {
                     match = match && d.row === row && !d.section;
                 }
@@ -2511,6 +2517,9 @@
             let isCorrect = drug.cabinet === cabinet && drug.col === col;
             if (drug.section) {
                 isCorrect = isCorrect && drug.section === section;
+                if (row != null) {
+                    isCorrect = isCorrect && (drug.row || 1) === row;
+                }
             } else if (drug.row) {
                 isCorrect = isCorrect && drug.row === row;
             }
@@ -2562,13 +2571,20 @@
 
             let selector;
             if (drug.section) {
-                selector = `[data-cabinet="${drug.cabinet}"][data-section="${drug.section}"][data-col="${drug.col}"]`;
+                const targetRow = drug.row || 1;
+                selector = `[data-cabinet="${drug.cabinet}"][data-section="${drug.section}"][data-row="${targetRow}"][data-col="${drug.col}"]`;
             } else if (drug.row) {
                 selector = `[data-cabinet="${drug.cabinet}"][data-row="${drug.row}"][data-col="${drug.col}"]`;
             } else {
                 selector = `[data-cabinet="${drug.cabinet}"][data-col="${drug.col}"]`;
             }
             const correctSlot = document.querySelector(selector);
+            if (!correctSlot && drug.section) {
+                const fallbackSelector = `[data-cabinet="${drug.cabinet}"][data-section="${drug.section}"][data-col="${drug.col}"]`;
+                const fallbackSlot = document.querySelector(fallbackSelector);
+                if (fallbackSlot) fallbackSlot.classList.add('highlight');
+                return;
+            }
             if (correctSlot) correctSlot.classList.add('highlight');
         }
 
