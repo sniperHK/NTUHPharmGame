@@ -1112,7 +1112,8 @@
 
         const specEl = document.createElement('div');
         specEl.className = 'drug-specs';
-        specEl.textContent = drug.stripSize + '/排 ' + drug.boxSize + '/盒';
+        const boxSpec = Number.isFinite(drug.boxSize) ? (drug.boxSize + '/盒') : '盒裝未設定';
+        specEl.textContent = drug.stripSize + '/排 ' + boxSpec;
         cell.appendChild(specEl);
 
         const unit = getDrugUnit(drug);
@@ -1127,7 +1128,7 @@
 
         // Tooltip
         cell.title = drug.name + '\n' +
-          drug.stripSize + ' 顆/排, ' + drug.boxSize + ' 顆/盒' +
+          drug.stripSize + ' 顆/排, ' + (Number.isFinite(drug.boxSize) ? (drug.boxSize + ' 顆/盒') : '盒裝數未設定') +
           (unit ? ' (' + unit + ')' : '') + '\n' +
           formatLocation(cabinetKey, section, row, col);
 
@@ -1662,7 +1663,7 @@
       if (drug.unit) parts.push('unit: ' + JSON.stringify(drug.unit));
       if (drug.colSpan > 1) parts.push('colSpan: ' + drug.colSpan);
       parts.push('stripSize: ' + drug.stripSize);
-      parts.push('boxSize: ' + drug.boxSize);
+      if (Number.isFinite(drug.boxSize)) parts.push('boxSize: ' + drug.boxSize);
       return '{ ' + parts.join(', ') + ' }';
     }
 

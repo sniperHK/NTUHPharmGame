@@ -9,53 +9,53 @@ const cabinetConfig = {
   A: { type: 'shelf', rows: 6, cols: 6, label: 'A 櫃' },
   J: {
     type: 'drawer', label: 'J 櫃', sections: {
-      drawer1: { rows: 6, cols: 3, label: '抽屜 1' },
-      drawer2: { rows: 6, cols: 3, label: '抽屜 2' },
-      doorL: { rows: 6, cols: 3, label: '左門' },
-      doorR: { rows: 6, cols: 3, label: '右門' }
+      drawer1: { rows: 5, cols: 3, label: '抽屜 1' },
+      drawer2: { rows: 5, cols: 3, label: '抽屜 2' },
+      doorL: { rows: 1, cols: 2, label: '左門' },
+      doorR: { rows: 1, cols: 2, label: '右門' }
     }
   },
   I: {
     type: 'drawer', label: 'I 櫃', sections: {
-      drawer1: { rows: 6, cols: 3, label: '抽屜 1' },
-      drawer2: { rows: 6, cols: 3, label: '抽屜 2' },
-      doorL: { rows: 6, cols: 3, label: '左門' },
-      doorR: { rows: 6, cols: 3, label: '右門' }
+      drawer1: { rows: 5, cols: 3, label: '抽屜 1' },
+      drawer2: { rows: 5, cols: 3, label: '抽屜 2' },
+      doorL: { rows: 1, cols: 2, label: '左門' },
+      doorR: { rows: 1, cols: 2, label: '右門' }
     }
   },
   H: {
     type: 'drawer', label: 'H 櫃', sections: {
-      drawer1: { rows: 6, cols: 3, label: '抽屜 1' },
-      drawer2: { rows: 6, cols: 3, label: '抽屜 2' },
-      doorL: { rows: 6, cols: 3, label: '左門' },
-      doorR: { rows: 6, cols: 3, label: '右門' }
+      drawer1: { rows: 5, cols: 3, label: '抽屜 1' },
+      drawer2: { rows: 5, cols: 3, label: '抽屜 2' },
+      doorL: { rows: 1, cols: 2, label: '左門' },
+      doorR: { rows: 1, cols: 2, label: '右門' }
     }
   },
   G: {
     type: 'drawer', label: 'G 櫃', sections: {
-      drawer1: { rows: 6, cols: 3, label: '抽屜 1' },
-      drawer2: { rows: 6, cols: 3, label: '抽屜 2' },
-      doorL: { rows: 6, cols: 3, label: '左門' },
-      doorR: { rows: 6, cols: 3, label: '右門' }
+      drawer1: { rows: 5, cols: 3, label: '抽屜 1' },
+      drawer2: { rows: 5, cols: 3, label: '抽屜 2' },
+      doorL: { rows: 1, cols: 2, label: '左門' },
+      doorR: { rows: 1, cols: 2, label: '右門' }
     }
   },
   F: {
     type: 'drawer', label: 'F 櫃', sections: {
       drawer1: { rows: 6, cols: 3, label: '抽屜 1' },
       drawer2: { rows: 6, cols: 3, label: '抽屜 2' },
-      doorL: { rows: 6, cols: 3, label: '左門' },
-      doorR: { rows: 6, cols: 3, label: '右門' }
+      doorL: { rows: 1, cols: 2, label: '左門' },
+      doorR: { rows: 1, cols: 2, label: '右門' }
     }
   },
   E: {
     type: 'drawer', label: 'E 櫃', sections: {
       drawer1: { rows: 6, cols: 3, label: '抽屜 1' },
       drawer2: { rows: 6, cols: 3, label: '抽屜 2' },
-      doorL: { rows: 6, cols: 3, label: '左門' },
-      doorR: { rows: 6, cols: 3, label: '右門' }
+      doorL: { rows: 1, cols: 2, label: '左門' },
+      doorR: { rows: 1, cols: 2, label: '右門' }
     }
   },
-  Desktop: { type: 'desktop', rows: 6, cols: 3, label: '桌面區' }
+  Desktop: { type: 'desktop', rows: 1, cols: 5, label: '桌面區' }
 };
 
 // ==================== 藥品資料庫 ====================

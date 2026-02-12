@@ -2332,6 +2332,12 @@
             }
         }
 
+        function updateDrugImage(drugName) {
+            closeDrugImageInPanel();
+            if (!drugName) return;
+            showDrugImage(drugName);
+        }
+
         function closeDrugImageInPanel() {
             const rightHandContent = document.getElementById('rightHandContent');
             rightHandContent.innerHTML = '';
@@ -2346,11 +2352,13 @@
             const options = [
                 drug.stripSize,
                 drug.stripSize * 2,
-                drug.boxSize,
-                drug.boxSize + drug.stripSize,
                 Math.floor(drug.stripSize * 1.5),
                 drug.stripSize * 3 + Math.floor(drug.stripSize / 2),
             ];
+            if (Number.isFinite(drug.boxSize) && drug.boxSize > 0) {
+                options.push(drug.boxSize);
+                options.push(drug.boxSize + drug.stripSize);
+            }
             return options[Math.floor(Math.random() * options.length)];
         }
 
@@ -2465,7 +2473,8 @@
             const looseCount = parseInt(document.getElementById('looseCount').textContent) || 0;
 
             const drug = gameState.currentDrug;
-            const totalDispensed = (boxCount * drug.boxSize) + (stripCount * drug.stripSize) + looseCount;
+            const boxSize = Number.isFinite(drug.boxSize) ? drug.boxSize : 0;
+            const totalDispensed = (boxCount * boxSize) + (stripCount * drug.stripSize) + looseCount;
 
             if (totalDispensed === gameState.currentQuantity) {
                 handleCorrect();
