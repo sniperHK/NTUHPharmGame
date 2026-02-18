@@ -7,42 +7,54 @@ const cabinetConfig = {
   C: { type: "shelf", rows: 5, cols: 6, label: "C 櫃" },
   B: { type: "shelf", rows: 5, cols: 7, label: "B 櫃" },
   A: { type: "shelf", rows: 6, cols: 6, label: "A 櫃" },
-  J: { type: 'drawer', label: "J 櫃", sections: {
-    drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
-    drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
-    doorL: { rows: 6, cols: 3, label: "左門" },
-    doorR: { rows: 6, cols: 3, label: "右門" }
-  }},
-  I: { type: 'drawer', label: "I 櫃", sections: {
-    drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
-    drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
-    doorL: { rows: 6, cols: 3, label: "左門" },
-    doorR: { rows: 6, cols: 3, label: "右門" }
-  }},
-  H: { type: 'drawer', label: "H 櫃", sections: {
-    drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
-    drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
-    doorL: { rows: 6, cols: 3, label: "左門" },
-    doorR: { rows: 6, cols: 3, label: "右門" }
-  }},
-  G: { type: 'drawer', label: "G 櫃", sections: {
-    drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
-    drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
-    doorL: { rows: 6, cols: 3, label: "左門" },
-    doorR: { rows: 6, cols: 3, label: "右門" }
-  }},
-  F: { type: 'drawer', label: "F 櫃", sections: {
-    drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
-    drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
-    doorL: { rows: 6, cols: 3, label: "左門" },
-    doorR: { rows: 6, cols: 3, label: "右門" }
-  }},
-  E: { type: 'drawer', label: "E 櫃", sections: {
-    drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
-    drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
-    doorL: { rows: 6, cols: 3, label: "左門" },
-    doorR: { rows: 6, cols: 3, label: "右門" }
-  }},
+  J: {
+    type: 'drawer', label: "J 櫃", sections: {
+      drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
+      drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
+      doorL: { rows: 6, cols: 3, label: "左門" },
+      doorR: { rows: 6, cols: 3, label: "右門" }
+    }
+  },
+  I: {
+    type: 'drawer', label: "I 櫃", sections: {
+      drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
+      drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
+      doorL: { rows: 6, cols: 3, label: "左門" },
+      doorR: { rows: 6, cols: 3, label: "右門" }
+    }
+  },
+  H: {
+    type: 'drawer', label: "H 櫃", sections: {
+      drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
+      drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
+      doorL: { rows: 6, cols: 3, label: "左門" },
+      doorR: { rows: 6, cols: 3, label: "右門" }
+    }
+  },
+  G: {
+    type: 'drawer', label: "G 櫃", sections: {
+      drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
+      drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
+      doorL: { rows: 6, cols: 3, label: "左門" },
+      doorR: { rows: 6, cols: 3, label: "右門" }
+    }
+  },
+  F: {
+    type: 'drawer', label: "F 櫃", sections: {
+      drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
+      drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
+      doorL: { rows: 6, cols: 3, label: "左門" },
+      doorR: { rows: 6, cols: 3, label: "右門" }
+    }
+  },
+  E: {
+    type: 'drawer', label: "E 櫃", sections: {
+      drawer1: { rows: 6, cols: 3, label: "抽屜 1" },
+      drawer2: { rows: 6, cols: 3, label: "抽屜 2" },
+      doorL: { rows: 6, cols: 3, label: "左門" },
+      doorR: { rows: 6, cols: 3, label: "右門" }
+    }
+  },
   Desktop: { type: "desktop", rows: 6, cols: 3, label: "桌面區" }
 };;
 
@@ -57,7 +69,7 @@ const drugDatabase = [
   { name: "Requip 2mg", cabinet: "C", row: 2, col: 1, isBox: true, stripSize: 4, boxSize: 28 },
   { name: "Entresto 50mg", cabinet: "C", row: 2, col: 2, isBox: true, stripSize: 7, boxSize: 28 },
   { name: "Ateol", cabinet: "C", row: 2, col: 3, stripSize: 14, boxSize: undefined },
-  { name: "Nifedipine 30mg", cabinet: "C", row: 2, col: 4, stripSize: 14, boxSize: undefined },
+  { name: "Nifedipine S.R.F.C. Tablet 30 mg/tab", cabinet: "C", row: 2, col: 4, stripSize: 14, boxSize: undefined },
   { name: "COZAAR", cabinet: "C", row: 2, col: 5, isBox: true, stripSize: 14, boxSize: 28 },
   { name: "Bokey", cabinet: "C", row: 2, col: 6, stripSize: 28, boxSize: undefined },
   { name: "Youkoxia", cabinet: "C", row: 3, col: 1, stripSize: 7, boxSize: undefined },
@@ -121,20 +133,20 @@ const drugDatabase = [
   { name: "Jardiance 25mg", cabinet: "A", row: 3, col: 2, stripSize: 10, boxSize: undefined },
   { name: "Diphenidol", cabinet: "A", row: 3, col: 3, stripSize: 10, boxSize: undefined },
   { name: "Zoloft", cabinet: "A", row: 3, col: 4, isBox: true, stripSize: 14, boxSize: 28 },
-  { name: "Amoxicillin", cabinet: "A", row: 3, col: 5, stripSize: 10, boxSize: undefined },
+  { name: "Amoxicillin 250 mg/cap", cabinet: "A", row: 3, col: 5, stripSize: 10, boxSize: undefined },
   { name: "Effexor 75", cabinet: "A", row: 3, col: 6, isBox: true, stripSize: 14, boxSize: 28 },
   { name: "Folic acid", cabinet: "A", row: 4, col: 1, stripSize: 10, boxSize: undefined },
   { name: "Predonine", cabinet: "A", row: 4, col: 2, stripSize: 10, boxSize: undefined },
   { name: "Xyzal", cabinet: "A", row: 4, col: 3, stripSize: 10, boxSize: undefined },
   { name: "Naposin", cabinet: "A", row: 4, col: 4, stripSize: 10, boxSize: undefined },
-  { name: "糖 Carlipin", cabinet: "A", row: 4, col: 5, stripSize: 10, boxSize: undefined },
+  { name: "Carlipin", cabinet: "A", row: 4, col: 5, stripSize: 10, boxSize: undefined },
   { name: "Lescol XL", cabinet: "A", row: 4, col: 6, isBox: true, stripSize: 7, boxSize: 28 },
   { name: "Nexium", cabinet: "A", row: 5, col: 1, isBox: true, stripSize: 7, boxSize: 28 },
   { name: "Lipanthyl", cabinet: "A", row: 5, col: 2, stripSize: 10, boxSize: undefined },
   { name: "Baraclude 0.5mg", cabinet: "A", row: 5, col: 3, stripSize: 10, boxSize: undefined },
   { name: "CellCept", cabinet: "A", row: 5, col: 4, stripSize: 10, boxSize: 100 },
   { name: "Prograf 1mg", cabinet: "A", row: 5, col: 5, isBox: true, stripSize: 10, boxSize: 50 },
-  { name: "Zyprexa", cabinet: "A", row: 5, col: 6, isBox: true, stripSize: 7, boxSize: 28 },
+  { name: "Zyprexa Zydis 5 mg/tab", cabinet: "A", row: 5, col: 6, isBox: true, stripSize: 7, boxSize: 28 },
   { name: "Natrilix", cabinet: "A", row: 6, col: 1, stripSize: 10, boxSize: undefined },
   { name: "Qtern", cabinet: "A", row: 6, col: 2, isBox: true, stripSize: 14, boxSize: 28 },
   { name: "Lyrica", cabinet: "A", row: 6, col: 3, isBox: true, stripSize: 14, boxSize: 56 },

@@ -341,11 +341,26 @@ EdTech Support 藥劑部_AG/
   - 包裝顆數資訊 (`一排幾顆`, `一盒幾顆`) 維持使用 `drugDatabase` 內的設定。
 
 #### 3. 更新圖片對應表 (`drug_map.js`)
-若資料庫 (`drug_data.csv`) 有更新，建議用腳本重新產生給前端使用的 `drug_map.js`（可選輸出 `drug_map.json`）：
+若資料庫 (`drug_data.csv`) 或遊戲藥名 (`drug_data.js`) 有更新，建議用下列流程維護圖片映射：
 
 ```bash
+# 1) 重新產生對應表（會套用 Reference/DrugData/drug_map.overrides.json）
 python3 scripts/generate_drug_map.py --out-json drug_map.json
-python3 scripts/audit_drug_data.py
+
+# 2) 稽核 CSV / drug_data.js / drug_map.js 一致性
+python3 scripts/audit_drug_data.py --max-list 40
+```
+
+- `Reference/DrugData/drug_map.overrides.json`：人工 alias 與特殊映射（避免被自動生成覆蓋）
+- `Reference/DrugData/drug_map_gap_report.md`：目前缺映射清單與後續補圖追蹤
+
+#### 3.1 Netlify 部署前檢查
+```bash
+./netlify-preflight.sh
+```
+若缺少變數，可先載入本機 `.env`：
+```bash
+set -a; source .env; set +a
 ```
 
 #### 4. 待辦事項 / 已知問題
