@@ -22,3 +22,19 @@ debug_fail.html
 
 # Local Netlify folder
 .netlify
+
+# Local Codex settings
+.claude/settings.local.json
+
+# Plaintext secrets (never commit)
+.env
+.env.missing
+.env.local
+.env.*.local
+
+# age private key (never commit)
+age-key.txt
+
+# Encrypted env files (safe to commit)
+!.env.age
+!.env.*.age
