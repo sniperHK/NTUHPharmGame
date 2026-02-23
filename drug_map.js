@@ -18,6 +18,7 @@ const drugImageMap = {
     "Amoxicillin 250 mg/cap": "Reference/DrugData/Images/AMO4AA16-A.jpg",
     "Antiasth": "Reference/DrugData/Images/ANT4MA10.jpg",
     "Apa-Mirtazapine ODT": "https://reg.ntuh.gov.tw/pharmacyoutside/DrugImage/New/APA4IC26-A.jpg",
+    "Apa-Mirtazapine": "https://reg.ntuh.gov.tw/pharmacyoutside/DrugImage/New/APA4IC26-A.jpg",
     "Aprovel 300mg": "Reference/DrugData/Images/APR4DBF1.jpg",
     "Arcoxia": "Reference/DrugData/Images/ARC4GB65.jpg",
     "Arheuma": "Reference/DrugData/Images/ARH4NB22.jpg",

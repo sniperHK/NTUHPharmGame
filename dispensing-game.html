@@ -1383,6 +1383,34 @@
             text-align: center;
             font-size: 0.9rem;
         }
+
+        .drug-image-fallback {
+            width: 100%;
+            min-height: 120px;
+            border: 2px dashed #cfd8dc;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #607d8b;
+            background: #fff;
+            text-align: center;
+            font-size: 0.82rem;
+            padding: 10px 8px;
+        }
+
+        .drug-image-fallback .fallback-title {
+            font-weight: bold;
+            color: #546e7a;
+        }
+
+        .drug-image-fallback .fallback-subtitle {
+            font-size: 0.75rem;
+            color: #78909c;
+        }
     </style>
 </head>
 
@@ -1788,7 +1816,7 @@
             const boxInfo = drug.boxSize ? `一${unitLabel || '盒'}：${drug.boxSize} 顆` : '';
             const imagePath = (typeof drugImageMap !== 'undefined') ? drugImageMap[drug.name] : '';
             const imageHtml = imagePath
-                ? `<img src="${imagePath}" alt="${drug.name}" class="zoom-drug-image">`
+                ? `<img src="${imagePath}" alt="${drug.name}" class="zoom-drug-image" onerror="handleZoomDrugImageError(this)">`
                 : '<div class="zoom-no-image">無藥品圖片</div>';
 
             card.innerHTML = `
@@ -2433,25 +2461,43 @@
         }
 
         function showDrugImage(drugName) {
-            // Check if drugImageMap is loaded
-            if (typeof drugImageMap !== 'undefined' && drugImageMap[drugName]) {
-                const rightHandContent = document.getElementById('rightHandContent');
+            const rightHandContent = document.getElementById('rightHandContent');
+            const imagePath = (typeof drugImageMap !== 'undefined') ? drugImageMap[drugName] : '';
+            const hasImage = Boolean(imagePath);
 
-                // 清除舊內容並顯示藥品圖片
-                rightHandContent.innerHTML = `
-                    <div class="drug-image-container" id="drugImageInPanel">
-                        <button class="drug-image-close" onclick="closeDrugImageInPanel()">✕</button>
-                        <img src="${drugImageMap[drugName]}" alt="${drugName}" class="drug-image-preview">
-                        <div class="drug-image-name">${drugName}</div>
+            // 清除舊內容並顯示藥品圖片（若缺圖/壞檔則顯示 fallback）
+            rightHandContent.innerHTML = `
+                <div class="drug-image-container" id="drugImageInPanel">
+                    <button class="drug-image-close" onclick="closeDrugImageInPanel()">✕</button>
+                    ${hasImage ? `<img src="${imagePath}" alt="${drugName}" class="drug-image-preview" onerror="handleDrugPreviewImageError(this)">` : ''}
+                    <div class="drug-image-fallback" ${hasImage ? 'hidden' : ''}>
+                        <div class="fallback-title">暫無藥品圖片</div>
+                        <div class="fallback-subtitle">${hasImage ? '圖片檔案無法載入' : '尚未建立圖片對應'}</div>
                     </div>
-                `;
-            }
+                    <div class="drug-image-name">${drugName}</div>
+                </div>
+            `;
         }
 
         function updateDrugImage(drugName) {
             closeDrugImageInPanel();
             if (!drugName) return;
             showDrugImage(drugName);
+        }
+
+        function handleDrugPreviewImageError(img) {
+            if (!img) return;
+            img.style.display = 'none';
+            const container = img.closest('.drug-image-container');
+            if (!container) return;
+            const fallback = container.querySelector('.drug-image-fallback');
+            if (fallback) fallback.hidden = false;
+        }
+
+        function handleZoomDrugImageError(img) {
+            const thumb = img?.closest('.zoom-drug-thumb');
+            if (!thumb) return;
+            thumb.innerHTML = '<div class="zoom-no-image">暫無藥品圖片</div>';
         }
 
         function closeDrugImageInPanel() {
